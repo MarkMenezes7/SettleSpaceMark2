@@ -1,0 +1,283 @@
+{% extends "base.html" %}
+
+{% block title %}Add Property - SettleSpace{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-10">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0"><i class="fas fa-plus-circle me-2"></i>Add New Property</h4>
+                </div>
+                <div class="card-body">
+                    <form method="POST" enctype="multipart/form-data">
+                        {{ form.hidden_tag() }}
+                        
+                        <!-- Basic Information -->
+                        <div class="row mb-4">
+                            <div class="col-12">
+                                <h5 class="text-primary border-bottom pb-2">Basic Information</h5>
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                {{ form.title.label(class="form-label") }}
+                                {{ form.title(class="form-control") }}
+                                {% if form.title.errors %}
+                                    <div class="text-danger small">
+                                        {% for error in form.title.errors %}
+                                            <div>{{ error }}</div>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                {{ form.category.label(class="form-label") }}
+                                {{ form.category(class="form-select", id="category") }}
+                                {% if form.category.errors %}
+                                    <div class="text-danger small">
+                                        {% for error in form.category.errors %}
+                                            <div>{{ error }}</div>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                {{ form.property_type.label(class="form-label") }}
+                                {{ form.property_type(class="form-select") }}
+                                {% if form.property_type.errors %}
+                                    <div class="text-danger small">
+                                        {% for error in form.property_type.errors %}
+                                            <div>{{ error }}</div>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                {{ form.price.label(class="form-label") }}
+                                <div class="input-group">
+                                    <span class="input-group-text">₹</span>
+                                    {{ form.price(class="form-control") }}
+                                </div>
+                                {% if form.price.errors %}
+                                    <div class="text-danger small">
+                                        {% for error in form.price.errors %}
+                                            <div>{{ error }}</div>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="col-12 mb-3">
+                                {{ form.description.label(class="form-label") }}
+                                {{ form.description(class="form-control", rows="4") }}
+                                {% if form.description.errors %}
+                                    <div class="text-danger small">
+                                        {% for error in form.description.errors %}
+                                            <div>{{ error }}</div>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <!-- Location & Details -->
+                        <div class="row mb-4">
+                            <div class="col-12">
+                                <h5 class="text-primary border-bottom pb-2">Location & Details</h5>
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                {{ form.location.label(class="form-label") }}
+                                {{ form.location(class="form-control") }}
+                                {% if form.location.errors %}
+                                    <div class="text-danger small">
+                                        {% for error in form.location.errors %}
+                                            <div>{{ error }}</div>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                {{ form.area.label(class="form-label") }}
+                                <div class="input-group">
+                                    {{ form.area(class="form-control") }}
+                                    <span class="input-group-text">sq ft</span>
+                                </div>
+                                {% if form.area.errors %}
+                                    <div class="text-danger small">
+                                        {% for error in form.area.errors %}
+                                            <div>{{ error }}</div>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                {{ form.bedrooms.label(class="form-label") }}
+                                {{ form.bedrooms(class="form-select") }}
+                                {% if form.bedrooms.errors %}
+                                    <div class="text-danger small">
+                                        {% for error in form.bedrooms.errors %}
+                                            <div>{{ error }}</div>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                {{ form.bathrooms.label(class="form-label") }}
+                                {{ form.bathrooms(class="form-select") }}
+                                {% if form.bathrooms.errors %}
+                                    <div class="text-danger small">
+                                        {% for error in form.bathrooms.errors %}
+                                            <div>{{ error }}</div>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <!-- Category Specific Fields -->
+                        <div id="buy-fields" class="category-fields" style="display: none;">
+                            <div class="row mb-4">
+                                <div class="col-12">
+                                    <h5 class="text-primary border-bottom pb-2">Sale Information</h5>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    {% if form.property_age %}
+                                        {{ form.property_age.label(class="form-label") }}
+                                        {{ form.property_age(class="form-select") }}
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div id="rent-fields" class="category-fields" style="display: none;">
+                            <div class="row mb-4">
+                                <div class="col-12">
+                                    <h5 class="text-primary border-bottom pb-2">Rental Information</h5>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    {% if form.security_deposit %}
+                                        {{ form.security_deposit.label(class="form-label") }}
+                                        <div class="input-group">
+                                            <span class="input-group-text">₹</span>
+                                            {{ form.security_deposit(class="form-control") }}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    {% if form.furnishing_status %}
+                                        {{ form.furnishing_status.label(class="form-label") }}
+                                        {{ form.furnishing_status(class="form-select") }}
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div id="pg-fields" class="category-fields" style="display: none;">
+                            <div class="row mb-4">
+                                <div class="col-12">
+                                    <h5 class="text-primary border-bottom pb-2">PG Information</h5>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    {% if form.gender_preference %}
+                                        {{ form.gender_preference.label(class="form-label") }}
+                                        {{ form.gender_preference(class="form-select") }}
+                                    {% endif %}
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    {% if form.meal_included %}
+                                        <div class="form-check mt-4">
+                                            {{ form.meal_included(class="form-check-input") }}
+                                            {{ form.meal_included.label(class="form-check-label") }}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Amenities -->
+                        <div class="row mb-4">
+                            <div class="col-12">
+                                <h5 class="text-primary border-bottom pb-2">Amenities</h5>
+                            </div>
+                            <div class="col-12 mb-3">
+                                {{ form.amenities.label(class="form-label") }}
+                                {{ form.amenities(class="form-control", rows="3", placeholder="e.g., Parking, Gym, Swimming Pool, Security, etc.") }}
+                                {% if form.amenities.errors %}
+                                    <div class="text-danger small">
+                                        {% for error in form.amenities.errors %}
+                                            <div>{{ error }}</div>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <!-- Images -->
+                        <div class="row mb-4">
+                            <div class="col-12">
+                                <h5 class="text-primary border-bottom pb-2">Property Images</h5>
+                            </div>
+                            <div class="col-12 mb-3">
+                                {{ form.images.label(class="form-label") }}
+                                {{ form.images(class="form-control", accept="image/*", multiple=True) }}
+                                <div class="form-text">Upload multiple images of your property. First image will be the main image.</div>
+                                {% if form.images.errors %}
+                                    <div class="text-danger small">
+                                        {% for error in form.images.errors %}
+                                            <div>{{ error }}</div>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <!-- Submit Button -->
+                        <div class="row">
+                            <div class="col-12">
+                                <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                                    <a href="{{ url_for('seller.dashboard') }}" class="btn btn-secondary me-md-2">Cancel</a>
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="fas fa-save me-2"></i>Submit Property
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const categorySelect = document.getElementById('category');
+    const categoryFields = document.querySelectorAll('.category-fields');
+    
+    function showCategoryFields() {
+        // Hide all category fields
+        categoryFields.forEach(field => {
+            field.style.display = 'none';
+        });
+        
+        // Show relevant fields
+        const selectedCategory = categorySelect.value;
+        const targetField = document.getElementById(selectedCategory + '-fields');
+        if (targetField) {
+            targetField.style.display = 'block';
+        }
+    }
+    
+    categorySelect.addEventListener('change', showCategoryFields);
+    showCategoryFields(); // Initial call
+});
+</script>
+{% endblock %}

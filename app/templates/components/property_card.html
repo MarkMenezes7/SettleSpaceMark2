@@ -1,0 +1,108 @@
+<div class="card property-card h-100">
+    <div class="position-relative">
+        {% if property.images %}
+            <img src="{{ url_for('main.uploaded_file', filename=property.images[0].filename) }}" 
+                 class="card-img-top property-image" alt="{{ property.title }}"
+                 onerror="this.src='https://images.pexels.com/photos/1396122/pexels-photo-1396122.jpeg'">
+        {% else %}
+            <img src="https://images.pexels.com/photos/1396122/pexels-photo-1396122.jpeg" 
+                 class="card-img-top property-image" alt="{{ property.title }}">
+        {% endif %}
+        
+        <!-- Category Badge -->
+        <span class="position-absolute top-0 start-0 m-3 category-badge category-{{ property.category }}">
+            {% if property.category == 'buy' %}For Sale
+            {% elif property.category == 'rent' %}For Rent
+            {% else %}PG/Hostel
+            {% endif %}
+        </span>
+        
+        <!-- Favorite Button (for logged in customers) -->
+        {% if current_user.is_authenticated and current_user.role == 'customer' %}
+            <button class="btn btn-sm position-absolute top-0 end-0 m-3 favorite-btn" 
+                    data-property-id="{{ property.id }}"
+                    style="background: rgba(255,255,255,0.9);">
+                <i class="far fa-heart"></i>
+            </button>
+        {% endif %}
+        
+        <!-- Featured Badge -->
+        {% if property.is_featured %}
+            <span class="position-absolute top-0 end-0 m-3 badge bg-warning text-dark">
+                <i class="fas fa-star me-1"></i> Featured
+            </span>
+        {% endif %}
+    </div>
+    
+    <div class="card-body d-flex flex-column">
+        <!-- Price -->
+        <div class="property-price">
+            {% if property.category == 'buy' %}
+                ₹{{ "{:,.0f}".format(property.price / 100000) }}L
+            {% elif property.category == 'rent' %}
+                ₹{{ "{:,}".format(property.price) }}/month
+            {% else %}
+                ₹{{ "{:,}".format(property.price) }}/month
+            {% endif %}
+        </div>
+        
+        <!-- Title -->
+        <h5 class="property-title">{{ property.title }}</h5>
+        
+        <!-- Location -->
+        <div class="property-location">
+            <i class="fas fa-map-marker-alt me-1"></i>
+            {{ property.location }}
+        </div>
+        
+        <!-- Property Features -->
+        <div class="property-features">
+            {% if property.bedrooms > 0 %}
+                <span><i class="fas fa-bed me-1"></i>{{ property.bedrooms }} Bed</span>
+            {% endif %}
+            {% if property.bathrooms > 0 %}
+                <span><i class="fas fa-bath me-1"></i>{{ property.bathrooms }} Bath</span>
+            {% endif %}
+            <span><i class="fas fa-ruler-combined me-1"></i>{{ property.area }} sq ft</span>
+        </div>
+        
+        <!-- Amenities Preview -->
+        {% if property.amenities %}
+            <div class="d-flex flex-wrap gap-1 mb-3">
+                {% set amenities_list = property.amenities.split(',') %}
+                {% for amenity in amenities_list[:3] %}
+                    <span class="badge bg-light text-dark">{{ amenity.strip() }}</span>
+                {% endfor %}
+                {% if amenities_list|length > 3 %}
+                    <span class="badge bg-light text-dark">+{{ amenities_list|length - 3 }} more</span>
+                {% endif %}
+            </div>
+        {% endif %}
+        
+        <!-- Seller Info -->
+        <div class="d-flex justify-content-between align-items-center mt-auto pt-3 border-top">
+            <div class="d-flex align-items-center">
+                <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-center me-2" 
+                     style="width: 32px; height: 32px; font-size: 0.8rem;">
+                    {{ property.seller.name[0].upper() }}
+                </div>
+                <small class="text-muted">{{ property.seller.name }}</small>
+            </div>
+            <small class="text-muted">{{ property.created_at.strftime('%b %d') }}</small>
+        </div>
+        
+        <!-- View Details Button -->
+        <div class="mt-3">
+            {% if current_user.is_authenticated %}
+                <a href="{{ url_for('main.property_detail', id=property.id) }}" class="btn btn-primary w-100">
+                    <i class="fas fa-eye me-1"></i> View Details
+                </a>
+            {% else %}
+                <a href="{{ url_for('auth.login', next=url_for('main.property_detail', id=property.id)) }}" 
+                   class="btn btn-outline-primary w-100">
+                    <i class="fas fa-sign-in-alt me-1"></i> Login to View
+                </a>
+            {% endif %}
+        </div>
+    </div>
+</div>

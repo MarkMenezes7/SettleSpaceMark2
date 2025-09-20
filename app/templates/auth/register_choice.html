@@ -1,0 +1,123 @@
+{% extends "base.html" %}
+
+{% block title %}Register - Settle Space{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6">
+            <div class="card shadow">
+                <div class="card-body p-5">
+                    <!-- Logo and Title -->
+                    <div class="text-center mb-5">
+                        <div class="mb-3">
+                            <i class="fas fa-home fa-3x text-primary"></i>
+                        </div>
+                        <h2 class="fw-bold">Join Settle Space</h2>
+                        <p class="text-muted">Choose your account type to get started</p>
+                    </div>
+
+                    <!-- Account Type Selection -->
+                    <div class="row g-4">
+                        <!-- Customer Account -->
+                        <div class="col-md-6">
+                            <a href="{{ url_for('auth.register_customer') }}" class="text-decoration-none">
+                                <div class="card h-100 border-2 border-primary-subtle hover-card">
+                                    <div class="card-body text-center p-4">
+                                        <div class="mb-3">
+                                            <i class="fas fa-user fa-3x text-primary"></i>
+                                        </div>
+                                        <h4 class="fw-bold text-primary">Customer</h4>
+                                        <p class="text-muted mb-4">Looking for properties to buy, rent, or PG accommodations</p>
+                                        
+                                        <ul class="list-unstyled text-start small text-muted">
+                                            <li class="mb-2">
+                                                <i class="fas fa-check text-success me-2"></i>
+                                                Browse verified properties
+                                            </li>
+                                            <li class="mb-2">
+                                                <i class="fas fa-check text-success me-2"></i>
+                                                Save favorite properties
+                                            </li>
+                                            <li class="mb-2">
+                                                <i class="fas fa-check text-success me-2"></i>
+                                                Contact sellers directly
+                                            </li>
+                                            <li class="mb-2">
+                                                <i class="fas fa-check text-success me-2"></i>
+                                                Advanced search filters
+                                            </li>
+                                        </ul>
+                                        
+                                        <div class="btn btn-primary w-100 mt-3">
+                                            Register as Customer
+                                        </div>
+                                    </div>
+                                </div>
+                            </a>
+                        </div>
+
+                        <!-- Seller Account -->
+                        <div class="col-md-6">
+                            <a href="{{ url_for('auth.register_seller') }}" class="text-decoration-none">
+                                <div class="card h-100 border-2 border-success-subtle hover-card">
+                                    <div class="card-body text-center p-4">
+                                        <div class="mb-3">
+                                            <i class="fas fa-building fa-3x text-success"></i>
+                                        </div>
+                                        <h4 class="fw-bold text-success">Seller</h4>
+                                        <p class="text-muted mb-4">Want to list and sell your properties</p>
+                                        
+                                        <ul class="list-unstyled text-start small text-muted">
+                                            <li class="mb-2">
+                                                <i class="fas fa-check text-success me-2"></i>
+                                                List unlimited properties
+                                            </li>
+                                            <li class="mb-2">
+                                                <i class="fas fa-check text-success me-2"></i>
+                                                Manage inquiries
+                                            </li>
+                                            <li class="mb-2">
+                                                <i class="fas fa-check text-success me-2"></i>
+                                                Dashboard analytics
+                                            </li>
+                                            <li class="mb-2">
+                                                <i class="fas fa-check text-success me-2"></i>
+                                                Verified seller badge
+                                            </li>
+                                        </ul>
+                                        
+                                        <div class="btn btn-success w-100 mt-3">
+                                            Register as Seller
+                                        </div>
+                                    </div>
+                                </div>
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- Login Link -->
+                    <div class="text-center mt-5">
+                        <p class="mb-0">Already have an account? 
+                            <a href="{{ url_for('auth.login') }}" class="text-decoration-none">
+                                Sign in here
+                            </a>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.hover-card {
+    transition: all 0.3s ease;
+}
+
+.hover-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.15) !important;
+}
+</style>
+{% endblock %}

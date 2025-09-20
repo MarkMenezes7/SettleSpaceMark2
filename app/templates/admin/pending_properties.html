@@ -1,0 +1,257 @@
+{% extends "base.html" %}
+
+{% block title %}Pending Properties - Admin{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h2 class="text-primary">Pending Properties</h2>
+                    <p class="text-muted">Review and approve property listings</p>
+                </div>
+                <a href="{{ url_for('admin.dashboard') }}" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left me-2"></i>Back to Dashboard
+                </a>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Filters -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <form method="GET" class="row g-3">
+                        <div class="col-md-3">
+                            <select name="category" class="form-select">
+                                <option value="">All Categories</option>
+                                <option value="buy" {% if request.args.get('category') == 'buy' %}selected{% endif %}>Buy</option>
+                                <option value="rent" {% if request.args.get('category') == 'rent' %}selected{% endif %}>Rent</option>
+                                <option value="pg" {% if request.args.get('category') == 'pg' %}selected{% endif %}>PG</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <input type="text" name="location" class="form-control" placeholder="Location" 
+                                   value="{{ request.args.get('location', '') }}">
+                        </div>
+                        <div class="col-md-3">
+                            <input type="text" name="seller" class="form-control" placeholder="Seller Name" 
+                                   value="{{ request.args.get('seller', '') }}">
+                        </div>
+                        <div class="col-md-3">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-search me-2"></i>Filter
+                            </button>
+                            <a href="{{ url_for('admin.pending_properties') }}" class="btn btn-outline-secondary">
+                                <i class="fas fa-times me-2"></i>Clear
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Properties List -->
+    <div class="row">
+        <div class="col-12">
+            {% if properties %}
+                {% for property in properties %}
+                <div class="card mb-4 shadow-sm">
+                    <div class="row g-0">
+                        <div class="col-md-4">
+                            {% if property.images %}
+                                <img src="{{ url_for('static', filename='uploads/properties/' + property.images[0].filename) }}" 
+                                     class="img-fluid rounded-start h-100" style="object-fit: cover;" alt="Property Image">
+                            {% else %}
+                                <div class="bg-light rounded-start h-100 d-flex align-items-center justify-content-center">
+                                    <i class="fas fa-home fa-3x text-muted"></i>
+                                </div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-8">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                    <div>
+                                        <h5 class="card-title">{{ property.title }}</h5>
+                                        <p class="text-muted mb-1">
+                                            <i class="fas fa-map-marker-alt me-2"></i>{{ property.location }}
+                                        </p>
+                                        <div class="d-flex gap-2 mb-2">
+                                            <span class="badge bg-secondary">{{ property.category.title() }}</span>
+                                            <span class="badge bg-info">{{ property.property_type }}</span>
+                                        </div>
+                                    </div>
+                                    <div class="text-end">
+                                        <h4 class="text-success">₹{{ "{:,}".format(property.price) }}</h4>
+                                        {% if property.category == 'rent' %}
+                                            <small class="text-muted">/month</small>
+                                        {% elif property.category == 'pg' %}
+                                            <small class="text-muted">/bed</small>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                
+                                <p class="card-text">{{ property.description[:150] }}{% if property.description|length > 150 %}...{% endif %}</p>
+                                
+                                <div class="row mb-3">
+                                    <div class="col-md-6">
+                                        <strong>Seller:</strong> {{ property.seller.name }}<br>
+                                        <strong>Email:</strong> {{ property.seller.email }}<br>
+                                        <strong>Phone:</strong> {{ property.seller.phone }}
+                                    </div>
+                                    <div class="col-md-6">
+                                        <strong>Area:</strong> {{ property.area }} sq ft<br>
+                                        <strong>Bedrooms:</strong> {{ property.bedrooms }}<br>
+                                        <strong>Bathrooms:</strong> {{ property.bathrooms }}
+                                    </div>
+                                </div>
+                                
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <small class="text-muted">
+                                        Listed on {{ property.created_at.strftime('%d %b %Y at %I:%M %p') }}
+                                    </small>
+                                    <div class="btn-group">
+                                        <button type="button" class="btn btn-sm btn-outline-primary" 
+                                                data-bs-toggle="modal" data-bs-target="#viewModal{{ property.id }}">
+                                            <i class="fas fa-eye me-1"></i>View Details
+                                        </button>
+                                        <button type="button" class="btn btn-sm btn-success" 
+                                                onclick="updatePropertyStatus({{ property.id }}, 'approved')">
+                                            <i class="fas fa-check me-1"></i>Approve
+                                        </button>
+                                        <button type="button" class="btn btn-sm btn-danger" 
+                                                onclick="updatePropertyStatus({{ property.id }}, 'rejected')">
+                                            <i class="fas fa-times me-1"></i>Reject
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Property Detail Modal -->
+                <div class="modal fade" id="viewModal{{ property.id }}" tabindex="-1">
+                    <div class="modal-dialog modal-lg">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title">{{ property.title }}</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                            </div>
+                            <div class="modal-body">
+                                {% if property.images %}
+                                    <div id="propertyCarousel{{ property.id }}" class="carousel slide mb-3" data-bs-ride="carousel">
+                                        <div class="carousel-inner rounded">
+                                            {% for image in property.images %}
+                                            <div class="carousel-item {% if loop.first %}active{% endif %}">
+                                                <img src="{{ url_for('uploaded_file', filename='properties/' + image.filename) }}" 
+                                                     class="d-block w-100" style="height: 300px; object-fit: cover;" 
+                                                     alt="Property Image">
+                                            </div>
+                                            {% endfor %}
+                                        </div>
+                                        {% if property.images|length > 1 %}
+                                        <button class="carousel-control-prev" type="button" 
+                                                data-bs-target="#propertyCarousel{{ property.id }}" data-bs-slide="prev">
+                                            <span class="carousel-control-prev-icon"></span>
+                                        </button>
+                                        <button class="carousel-control-next" type="button" 
+                                                data-bs-target="#propertyCarousel{{ property.id }}" data-bs-slide="next">
+                                            <span class="carousel-control-next-icon"></span>
+                                        </button>
+                                        {% endif %}
+                                    </div>
+                                {% endif %}
+                                
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <h6>Property Details</h6>
+                                        <ul class="list-unstyled">
+                                            <li><strong>Type:</strong> {{ property.property_type }}</li>
+                                            <li><strong>Category:</strong> {{ property.category.title() }}</li>
+                                            <li><strong>Area:</strong> {{ property.area }} sq ft</li>
+                                            <li><strong>Bedrooms:</strong> {{ property.bedrooms }}</li>
+                                            <li><strong>Bathrooms:</strong> {{ property.bathrooms }}</li>
+                                            <li><strong>Price:</strong> ₹{{ "{:,}".format(property.price) }}</li>
+                                        </ul>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <h6>Seller Information</h6>
+                                        <ul class="list-unstyled">
+                                            <li><strong>Name:</strong> {{ property.seller.name }}</li>
+                                            <li><strong>Email:</strong> {{ property.seller.email }}</li>
+                                            <li><strong>Phone:</strong> {{ property.seller.phone }}</li>
+                                            <li><strong>Member Since:</strong> {{ property.seller.created_at.strftime('%b %Y') }}</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                                
+                                <h6>Description</h6>
+                                <p>{{ property.description }}</p>
+                                
+                                {% if property.amenities %}
+                                <h6>Amenities</h6>
+                                <p>{{ property.amenities }}</p>
+                                {% endif %}
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                <button type="button" class="btn btn-success" 
+                                        onclick="updatePropertyStatus({{ property.id }}, 'approved')" data-bs-dismiss="modal">
+                                    <i class="fas fa-check me-1"></i>Approve
+                                </button>
+                                <button type="button" class="btn btn-danger" 
+                                        onclick="updatePropertyStatus({{ property.id }}, 'rejected')" data-bs-dismiss="modal">
+                                    <i class="fas fa-times me-1"></i>Reject
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="card">
+                    <div class="card-body text-center py-5">
+                        <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
+                        <h5 class="text-muted">No Pending Properties</h5>
+                        <p class="text-muted">All properties have been reviewed.</p>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<script>
+function updatePropertyStatus(propertyId, status) {
+    if (confirm(`Are you sure you want to ${status} this property?`)) {
+        fetch(`/admin/property/${propertyId}/status`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token() }}'
+            },
+            body: JSON.stringify({
+                status: status
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            } else {
+                alert('Error updating property status');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error updating property status');
+        });
+    }
+}
+</script>
+{% endblock %}

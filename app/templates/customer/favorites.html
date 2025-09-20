@@ -1,0 +1,255 @@
+{% extends "base.html" %}
+
+{% block title %}My Favorites - Settle Space{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <!-- Page Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h2 class="text-primary mb-1">
+                        <i class="fas fa-heart me-2"></i>My Favorites
+                    </h2>
+                    <p class="text-muted mb-0">Properties you've saved for later</p>
+                </div>
+                <div class="d-flex align-items-center gap-2">
+                    <span class="badge bg-primary fs-6">{{ favorites.total }} Properties</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% if favorites.items %}
+        <!-- Properties Grid -->
+        <div class="row">
+            {% for favorite, property in favorites.items %}
+                <div class="col-lg-4 col-md-6 mb-4">
+                    <div class="card property-card h-100 position-relative">
+                        <!-- Category Badge -->
+                        <span class="category-badge category-{{ property.category }}">
+                            {{ property.category.title() }}
+                        </span>
+                        
+                        <!-- Remove from Favorites Button -->
+                        <button class="btn btn-sm position-absolute" 
+                                style="top: 10px; right: 10px; z-index: 10; background: rgba(255,255,255,0.9); border: none;"
+                                onclick="toggleFavorite({{ property.id }}, this)"
+                                title="Remove from favorites">
+                            <i class="fas fa-heart text-danger"></i>
+                        </button>
+
+                        <!-- Property Image -->
+                        <div class="position-relative overflow-hidden" style="height: 200px;">
+                            {% if property.images %}
+                                <img src="{{ url_for('uploaded_file', filename='properties/' + property.images[0].filename) }}" 
+                                     class="card-img-top property-image" alt="{{ property.title }}">
+                            {% else %}
+                                <div class="d-flex align-items-center justify-content-center h-100 bg-light">
+                                    <i class="fas fa-home fa-3x text-muted"></i>
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="card-body d-flex flex-column">
+                            <!-- Price -->
+                            <div class="property-price">
+                                ₹{{ "{:,}".format(property.price) }}
+                                {% if property.category == 'rent' %}
+                                    <small class="text-muted">/month</small>
+                                {% elif property.category == 'pg' %}
+                                    <small class="text-muted">/bed</small>
+                                {% endif %}
+                            </div>
+
+                            <!-- Title -->
+                            <h5 class="property-title">{{ property.title }}</h5>
+
+                            <!-- Location -->
+                            <p class="property-location">
+                                <i class="fas fa-map-marker-alt me-1"></i>
+                                {{ property.location }}
+                            </p>
+
+                            <!-- Property Features -->
+                            <div class="property-features">
+                                <span><i class="fas fa-bed"></i> {{ property.bedrooms }} Bed</span>
+                                <span><i class="fas fa-bath"></i> {{ property.bathrooms }} Bath</span>
+                                <span><i class="fas fa-ruler-combined"></i> {{ property.area }} sq ft</span>
+                            </div>
+
+                            <!-- Property Type -->
+                            <div class="mb-3">
+                                <span class="badge bg-secondary">{{ property.property_type.title() }}</span>
+                            </div>
+
+                            <!-- Added Date -->
+                            <div class="text-muted small mb-3">
+                                <i class="fas fa-clock me-1"></i>
+                                Added on {{ favorite.created_at.strftime('%d %b %Y') }}
+                            </div>
+
+                            <!-- Action Buttons -->
+                            <div class="mt-auto">
+                                <div class="d-grid gap-2">
+                                    <a href="{{ url_for('main.property_detail', id=property.id) }}" 
+                                       class="btn btn-primary">
+                                        <i class="fas fa-eye me-2"></i>View Details
+                                    </a>
+                                    <a href="{{ url_for('customer.inquire', property_id=property.id) }}" 
+                                       class="btn btn-outline-primary">
+                                        <i class="fas fa-envelope me-2"></i>Send Inquiry
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+
+        <!-- Pagination -->
+        {% if favorites.pages > 1 %}
+            <div class="row mt-4">
+                <div class="col-12">
+                    <nav aria-label="Favorites pagination">
+                        <ul class="pagination justify-content-center">
+                            {% if favorites.has_prev %}
+                                <li class="page-item">
+                                    <a class="page-link" href="{{ url_for('customer.favorites', page=favorites.prev_num) }}">
+                                        <i class="fas fa-chevron-left"></i> Previous
+                                    </a>
+                                </li>
+                            {% endif %}
+
+                            {% for page_num in favorites.iter_pages() %}
+                                {% if page_num %}
+                                    {% if page_num != favorites.page %}
+                                        <li class="page-item">
+                                            <a class="page-link" href="{{ url_for('customer.favorites', page=page_num) }}">{{ page_num }}</a>
+                                        </li>
+                                    {% else %}
+                                        <li class="page-item active">
+                                            <span class="page-link">{{ page_num }}</span>
+                                        </li>
+                                    {% endif %}
+                                {% else %}
+                                    <li class="page-item disabled">
+                                        <span class="page-link">...</span>
+                                    </li>
+                                {% endif %}
+                            {% endfor %}
+
+                            {% if favorites.has_next %}
+                                <li class="page-item">
+                                    <a class="page-link" href="{{ url_for('customer.favorites', page=favorites.next_num) }}">
+                                        Next <i class="fas fa-chevron-right"></i>
+                                    </a>
+                                </li>
+                            {% endif %}
+                        </ul>
+                    </nav>
+                </div>
+            </div>
+        {% endif %}
+
+    {% else %}
+        <!-- Empty State -->
+        <div class="row">
+            <div class="col-12">
+                <div class="empty-state">
+                    <div class="empty-state-icon">
+                        <i class="fas fa-heart"></i>
+                    </div>
+                    <h3>No Favorites Yet</h3>
+                    <p>Start exploring properties and add them to your favorites by clicking the heart icon.</p>
+                    <div class="d-flex gap-3 justify-content-center flex-wrap">
+                        <a href="{{ url_for('main.properties', category='buy') }}" class="btn btn-primary">
+                            <i class="fas fa-shopping-cart me-2"></i>Browse Buy Properties
+                        </a>
+                        <a href="{{ url_for('main.properties', category='rent') }}" class="btn btn-outline-primary">
+                            <i class="fas fa-key me-2"></i>Browse Rentals
+                        </a>
+                        <a href="{{ url_for('main.properties', category='pg') }}" class="btn btn-outline-primary">
+                            <i class="fas fa-bed me-2"></i>Browse PG/Hostels
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function toggleFavorite(propertyId, button) {
+    // Show loading state
+    const originalIcon = button.innerHTML;
+    button.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+    button.disabled = true;
+    
+    fetch('/customer/toggle-favorite/' + propertyId, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': document.querySelector('meta[name=csrf-token]').getAttribute('content')
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.is_favorite) {
+            button.innerHTML = '<i class="fas fa-heart text-danger"></i>';
+            button.title = 'Remove from favorites';
+        } else {
+            // Remove the property card from view since it's no longer a favorite
+            button.closest('.col-lg-4').remove();
+            
+            // Check if no favorites left
+            const propertyCards = document.querySelectorAll('.property-card').length;
+            if (propertyCards === 0) {
+                location.reload(); // Reload to show empty state
+            }
+        }
+        
+        // Show success message
+        showToast(data.message, 'success');
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        button.innerHTML = originalIcon;
+        showToast('Failed to update favorites', 'error');
+    })
+    .finally(() => {
+        button.disabled = false;
+    });
+}
+
+function showToast(message, type) {
+    // Create and show a temporary toast notification
+    const toastHtml = `
+        <div class="toast align-items-center text-white bg-${type === 'success' ? 'success' : 'danger'} border-0" role="alert" style="position: fixed; top: 20px; right: 20px; z-index: 9999;">
+            <div class="d-flex">
+                <div class="toast-body">
+                    ${message}
+                </div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+            </div>
+        </div>
+    `;
+    
+    document.body.insertAdjacentHTML('beforeend', toastHtml);
+    const toast = new bootstrap.Toast(document.querySelector('.toast:last-child'));
+    toast.show();
+    
+    // Remove toast element after it's hidden
+    setTimeout(() => {
+        const toastElement = document.querySelector('.toast:last-child');
+        if (toastElement) {
+            toastElement.remove();
+        }
+    }, 5000);
+}
+</script>
+{% endblock %}

@@ -1,0 +1,117 @@
+{% extends "base.html" %}
+
+{% block title %}Payment - SettleSpace{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow">
+                <div class="card-header bg-success text-white">
+                    <h4 class="mb-0"><i class="fas fa-credit-card me-2"></i>Complete Payment</h4>
+                </div>
+                <div class="card-body">
+                    <!-- Property Info -->
+                    <div class="alert alert-info">
+                        <h5 class="alert-heading">Property: {{ property.title }}</h5>
+                        <p class="mb-0">Location: {{ property.location }}</p>
+                        <hr>
+                        <p class="mb-0">Listing Fee: <strong>₹{{ "{:,}".format(listing_fee) }}</strong></p>
+                    </div>
+                    
+                    <!-- Payment Instructions -->
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <h5 class="text-primary border-bottom pb-2">Payment Instructions</h5>
+                            <div class="card bg-light">
+                                <div class="card-body">
+                                    <ol class="mb-0">
+                                        <li class="mb-2">
+                                            <strong>Pay ₹{{ "{:,}".format(listing_fee) }} to our Google Pay</strong>
+                                            <br>
+                                            <div class="mt-2">
+                                                <span class="badge bg-primary fs-6">{{ gpay_upi }}</span>
+                                                <button class="btn btn-sm btn-outline-primary ms-2" onclick="copyUPI()">
+                                                    <i class="fas fa-copy"></i> Copy UPI ID
+                                                </button>
+                                            </div>
+                                        </li>
+                                        <li class="mb-2">Take a screenshot of the successful payment</li>
+                                        <li class="mb-2">Fill the transaction ID and upload the screenshot below</li>
+                                        <li>Your property will be reviewed and approved within 24 hours</li>
+                                    </ol>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Payment Form -->
+                    <form method="POST" enctype="multipart/form-data">
+                        {{ form.hidden_tag() }}
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                {{ form.transaction_id.label(class="form-label") }}
+                                {{ form.transaction_id(class="form-control", placeholder="Enter UPI Transaction ID") }}
+                                {% if form.transaction_id.errors %}
+                                    <div class="text-danger small">
+                                        {% for error in form.transaction_id.errors %}
+                                            <div>{{ error }}</div>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                {{ form.screenshot.label(class="form-label") }}
+                                {{ form.screenshot(class="form-control", accept="image/*") }}
+                                {% if form.screenshot.errors %}
+                                    <div class="text-danger small">
+                                        {% for error in form.screenshot.errors %}
+                                            <div>{{ error }}</div>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div class="alert alert-warning">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            <strong>Important:</strong> Make sure the transaction ID matches exactly with your payment screenshot. 
+                            Incorrect information may delay the approval process.
+                        </div>
+                        
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <a href="{{ url_for('seller.dashboard') }}" class="btn btn-secondary me-md-2">
+                                <i class="fas fa-arrow-left me-2"></i>Back to Dashboard
+                            </a>
+                            <button type="submit" class="btn btn-success">
+                                <i class="fas fa-check me-2"></i>Submit Payment Proof
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function copyUPI() {
+    navigator.clipboard.writeText('{{ gpay_upi }}').then(function() {
+        // Show toast or alert
+        const btn = event.target.closest('button');
+        const originalText = btn.innerHTML;
+        btn.innerHTML = '<i class="fas fa-check"></i> Copied!';
+        btn.classList.remove('btn-outline-primary');
+        btn.classList.add('btn-success');
+        
+        setTimeout(function() {
+            btn.innerHTML = originalText;
+            btn.classList.remove('btn-success');
+            btn.classList.add('btn-outline-primary');
+        }, 2000);
+    });
+}
+</script>
+{% endblock %}

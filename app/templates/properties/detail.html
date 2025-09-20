@@ -1,0 +1,437 @@
+{% extends "base.html" %}
+
+{% block title %}{{ property.title }} - Settle Space{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{ url_for('main.index') }}">Home</a></li>
+            <li class="breadcrumb-item"><a href="{{ url_for('main.properties', category=property.category) }}">{{ property.category.title() }}</a></li>
+            <li class="breadcrumb-item active">{{ property.title }}</li>
+        </ol>
+    </nav>
+
+    <div class="row">
+        <!-- Property Images -->
+        <div class="col-lg-8 mb-4">
+            {% if property.images %}
+                <div id="propertyCarousel" class="carousel slide" data-bs-ride="carousel">
+                    <div class="carousel-inner rounded">
+                        {% for image in property.images %}
+                            <div class="carousel-item {{ 'active' if loop.first }}">
+                                <img src="{{ url_for('main.uploaded_file', filename=image.filename) }}" 
+                                     class="d-block w-100" style="height: 400px; object-fit: cover;" 
+                                     alt="{{ property.title }}"
+                                     onerror="this.src='https://images.pexels.com/photos/1396122/pexels-photo-1396122.jpeg'">
+                            </div>
+                        {% endfor %}
+                    </div>
+                    
+                    {% if property.images|length > 1 %}
+                        <button class="carousel-control-prev" type="button" data-bs-target="#propertyCarousel" data-bs-slide="prev">
+                            <span class="carousel-control-prev-icon"></span>
+                        </button>
+                        <button class="carousel-control-next" type="button" data-bs-target="#propertyCarousel" data-bs-slide="next">
+                            <span class="carousel-control-next-icon"></span>
+                        </button>
+                        
+                        <!-- Indicators -->
+                        <div class="carousel-indicators">
+                            {% for image in property.images %}
+                                <button type="button" data-bs-target="#propertyCarousel" data-bs-slide-to="{{ loop.index0 }}" 
+                                        class="{{ 'active' if loop.first }}" aria-label="Slide {{ loop.index }}"></button>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+                
+                <!-- Thumbnail Gallery -->
+                {% if property.images|length > 1 %}
+                    <div class="d-flex gap-2 mt-3 overflow-auto">
+                        {% for image in property.images %}
+                            <img src="{{ url_for('main.uploaded_file', filename=image.filename) }}" 
+                                 class="img-thumbnail flex-shrink-0" style="width: 80px; height: 60px; object-fit: cover; cursor: pointer;"
+                                 onclick="goToSlide({{ loop.index0 }})" alt="Thumbnail {{ loop.index }}"
+                                 onerror="this.src='https://images.pexels.com/photos/1396122/pexels-photo-1396122.jpeg'">
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            {% else %}
+                <div class="d-flex align-items-center justify-content-center bg-light rounded" style="height: 400px;">
+                    <div class="text-center">
+                        <i class="fas fa-home fa-5x text-muted mb-3"></i>
+                        <p class="text-muted">No images available</p>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- Property Details Sidebar -->
+        <div class="col-lg-4">
+            <div class="card shadow-sm sticky-top" style="top: 100px;">
+                <div class="card-body">
+                    <!-- Price and Category -->
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <div>
+                            <div class="h3 text-primary mb-1">
+                                ₹{{ "{:,}".format(property.price) }}
+                                {% if property.category == 'rent' %}
+                                    <small class="text-muted">/month</small>
+                                {% elif property.category == 'pg' %}
+                                    <small class="text-muted">/bed</small>
+                                {% endif %}
+                            </div>
+                            {% if property.category == 'rent' and property.security_deposit %}
+                                <p class="text-muted mb-0">Security: ₹{{ "{:,}".format(property.security_deposit) }}</p>
+                            {% endif %}
+                        </div>
+                        <span class="badge bg-{{ 'success' if property.category == 'buy' else 'primary' if property.category == 'rent' else 'warning' }} fs-6">
+                            {{ property.category.title() }}
+                        </span>
+                    </div>
+
+                    <!-- Key Features -->
+                    <div class="row g-3 mb-4">
+                        <div class="col-4 text-center">
+                            <div class="bg-light rounded p-2">
+                                <i class="fas fa-bed text-primary mb-1"></i>
+                                <div class="small text-muted">Bedrooms</div>
+                                <div class="fw-bold">{{ property.bedrooms }}</div>
+                            </div>
+                        </div>
+                        <div class="col-4 text-center">
+                            <div class="bg-light rounded p-2">
+                                <i class="fas fa-bath text-primary mb-1"></i>
+                                <div class="small text-muted">Bathrooms</div>
+                                <div class="fw-bold">{{ property.bathrooms }}</div>
+                            </div>
+                        </div>
+                        <div class="col-4 text-center">
+                            <div class="bg-light rounded p-2">
+                                <i class="fas fa-ruler-combined text-primary mb-1"></i>
+                                <div class="small text-muted">Area</div>
+                                <div class="fw-bold">{{ property.area }}</div>
+                                <div class="small text-muted">sq ft</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="d-grid gap-2 mb-4">
+                        {% if current_user.is_authenticated and current_user.role == 'customer' %}
+                            <a href="{{ url_for('customer.inquire', property_id=property.id) }}" class="btn btn-primary">
+                                <i class="fas fa-envelope me-2"></i>Send Inquiry
+                            </a>
+                            <button class="btn btn-outline-danger" onclick="toggleFavorite({{ property.id }}, this)">
+                                {% if is_favorite %}
+                                    <i class="fas fa-heart me-2"></i>Remove from Favorites
+                                {% else %}
+                                    <i class="far fa-heart me-2"></i>Add to Favorites
+                                {% endif %}
+                            </button>
+                        {% elif not current_user.is_authenticated %}
+                            <a href="{{ url_for('auth.login', next=request.url) }}" class="btn btn-primary">
+                                <i class="fas fa-sign-in-alt me-2"></i>Login to Inquire
+                            </a>
+                        {% endif %}
+                        <button class="btn btn-outline-primary" onclick="shareProperty()">
+                            <i class="fas fa-share me-2"></i>Share Property
+                        </button>
+                    </div>
+
+                    <!-- Seller Info -->
+                    <div class="border-top pt-3">
+                        <h6 class="mb-2">Listed by</h6>
+                        <div class="d-flex align-items-center">
+                            <div class="bg-primary rounded-circle d-flex align-items-center justify-content-center me-3" 
+                                 style="width: 50px; height: 50px;">
+                                <i class="fas fa-user text-white"></i>
+                            </div>
+                            <div>
+                                <div class="fw-bold">{{ property.seller.name }}</div>
+                                <div class="text-muted small">Seller</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Property Information -->
+    <div class="row mt-4">
+        <div class="col-lg-8">
+            <!-- Property Details -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-body">
+                    <h4 class="card-title mb-3">{{ property.title }}</h4>
+                    
+                    <!-- Location -->
+                    <div class="d-flex align-items-center text-muted mb-3">
+                        <i class="fas fa-map-marker-alt me-2"></i>
+                        <span>{{ property.location }}</span>
+                    </div>
+
+                    <!-- Property Type -->
+                    <div class="mb-3">
+                        <span class="badge bg-secondary me-2">{{ property.property_type.title() }}</span>
+                        {% if property.furnishing_status %}
+                            <span class="badge bg-info">{{ property.furnishing_status.title() }} Furnished</span>
+                        {% endif %}
+                        {% if property.gender_preference %}
+                            <span class="badge bg-warning text-dark">{{ property.gender_preference.title() }}</span>
+                        {% endif %}
+                        {% if property.meal_included %}
+                            <span class="badge bg-success">Meals Included</span>
+                        {% endif %}
+                    </div>
+
+                    <!-- Description -->
+                    <h5>Description</h5>
+                    <p class="text-justify">{{ property.description }}</p>
+                </div>
+            </div>
+
+            <!-- Property Features -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-body">
+                    <h5 class="card-title mb-3">Property Features</h5>
+                    <div class="row g-3">
+                        <div class="col-sm-6 col-md-4">
+                            <div class="d-flex align-items-center">
+                                <i class="fas fa-bed text-primary me-2"></i>
+                                <span>{{ property.bedrooms }} Bedroom{{ 's' if property.bedrooms != 1 }}</span>
+                            </div>
+                        </div>
+                        <div class="col-sm-6 col-md-4">
+                            <div class="d-flex align-items-center">
+                                <i class="fas fa-bath text-primary me-2"></i>
+                                <span>{{ property.bathrooms }} Bathroom{{ 's' if property.bathrooms != 1 }}</span>
+                            </div>
+                        </div>
+                        <div class="col-sm-6 col-md-4">
+                            <div class="d-flex align-items-center">
+                                <i class="fas fa-ruler-combined text-primary me-2"></i>
+                                <span>{{ property.area }} sq ft</span>
+                            </div>
+                        </div>
+                        {% if property.property_age %}
+                            <div class="col-sm-6 col-md-4">
+                                <div class="d-flex align-items-center">
+                                    <i class="fas fa-calendar text-primary me-2"></i>
+                                    <span>{{ property.property_age }} years old</span>
+                                </div>
+                            </div>
+                        {% endif %}
+                        {% if property.furnishing_status %}
+                            <div class="col-sm-6 col-md-4">
+                                <div class="d-flex align-items-center">
+                                    <i class="fas fa-couch text-primary me-2"></i>
+                                    <span>{{ property.furnishing_status.title() }} Furnished</span>
+                                </div>
+                            </div>
+                        {% endif %}
+                        {% if property.gender_preference %}
+                            <div class="col-sm-6 col-md-4">
+                                <div class="d-flex align-items-center">
+                                    <i class="fas fa-users text-primary me-2"></i>
+                                    <span>{{ property.gender_preference.title() }} Only</span>
+                                </div>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Amenities -->
+            {% if property.amenities %}
+                <div class="card shadow-sm mb-4">
+                    <div class="card-body">
+                        <h5 class="card-title mb-3">Amenities</h5>
+                        <div class="row g-2">
+                            {% for amenity in property.amenities.split(',') %}
+                                <div class="col-sm-6 col-md-4">
+                                    <div class="d-flex align-items-center">
+                                        <i class="fas fa-check-circle text-success me-2"></i>
+                                        <span>{{ amenity.strip() }}</span>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+
+            <!-- Additional Info based on category -->
+            {% if property.category == 'rent' or property.category == 'pg' %}
+                <div class="card shadow-sm mb-4">
+                    <div class="card-body">
+                        <h5 class="card-title mb-3">
+                            {% if property.category == 'rent' %}Rental Information{% else %}PG Information{% endif %}
+                        </h5>
+                        <div class="row g-3">
+                            {% if property.monthly_rent %}
+                                <div class="col-sm-6">
+                                    <div class="d-flex justify-content-between">
+                                        <span>Monthly Rent:</span>
+                                        <strong>₹{{ "{:,}".format(property.monthly_rent) }}</strong>
+                                    </div>
+                                </div>
+                            {% endif %}
+                            {% if property.per_bed_price %}
+                                <div class="col-sm-6">
+                                    <div class="d-flex justify-content-between">
+                                        <span>Per Bed Price:</span>
+                                        <strong>₹{{ "{:,}".format(property.per_bed_price) }}</strong>
+                                    </div>
+                                </div>
+                            {% endif %}
+                            {% if property.security_deposit %}
+                                <div class="col-sm-6">
+                                    <div class="d-flex justify-content-between">
+                                        <span>Security Deposit:</span>
+                                        <strong>₹{{ "{:,}".format(property.security_deposit) }}</strong>
+                                    </div>
+                                </div>
+                            {% endif %}
+                            {% if property.meal_included %}
+                                <div class="col-sm-6">
+                                    <div class="d-flex justify-content-between">
+                                        <span>Meals:</span>
+                                        <strong class="text-success">Included</strong>
+                                    </div>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+
+            <!-- Property Posted Info -->
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title mb-3">Property Information</h5>
+                    <div class="row g-3">
+                        <div class="col-sm-6">
+                            <div class="d-flex justify-content-between">
+                                <span>Posted on:</span>
+                                <strong>{{ property.created_at.strftime('%d %b %Y') }}</strong>
+                            </div>
+                        </div>
+                        <div class="col-sm-6">
+                            <div class="d-flex justify-content-between">
+                                <span>Property ID:</span>
+                                <strong>#{{ property.id }}</strong>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Similar Properties -->
+        <div class="col-lg-4">
+            <div class="card shadow-sm">
+                <div class="card-header">
+                    <h5 class="mb-0">Similar Properties</h5>
+                </div>
+                <div class="card-body">
+                    <!-- This would contain similar properties - for now showing placeholder -->
+                    <div class="text-center text-muted py-4">
+                        <i class="fas fa-search fa-2x mb-2"></i>
+                        <p>Similar properties will be shown here</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function goToSlide(index) {
+    const carousel = new bootstrap.Carousel(document.getElementById('propertyCarousel'));
+    carousel.to(index);
+}
+
+function toggleFavorite(propertyId, button) {
+    // Show loading state
+    const originalContent = button.innerHTML;
+    button.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Loading...';
+    button.disabled = true;
+    
+    fetch('/customer/toggle-favorite/' + propertyId, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': document.querySelector('meta[name=csrf-token]').getAttribute('content')
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.is_favorite) {
+            button.innerHTML = '<i class="fas fa-heart me-2"></i>Remove from Favorites';
+            button.className = 'btn btn-outline-danger';
+        } else {
+            button.innerHTML = '<i class="far fa-heart me-2"></i>Add to Favorites';
+            button.className = 'btn btn-outline-danger';
+        }
+        
+        // Show success message
+        showToast(data.message, 'success');
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        button.innerHTML = originalContent;
+        showToast('Failed to update favorites', 'error');
+    })
+    .finally(() => {
+        button.disabled = false;
+    });
+}
+
+function shareProperty() {
+    if (navigator.share) {
+        navigator.share({
+            title: '{{ property.title }}',
+            text: 'Check out this property on Settle Space',
+            url: window.location.href
+        });
+    } else {
+        // Fallback: copy to clipboard
+        navigator.clipboard.writeText(window.location.href).then(() => {
+            showToast('Property link copied to clipboard!', 'success');
+        });
+    }
+}
+
+function showToast(message, type) {
+    // Create and show a temporary toast notification
+    const toastHtml = `
+        <div class="toast align-items-center text-white bg-${type === 'success' ? 'success' : 'danger'} border-0" role="alert" style="position: fixed; top: 20px; right: 20px; z-index: 9999;">
+            <div class="d-flex">
+                <div class="toast-body">
+                    ${message}
+                </div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+            </div>
+        </div>
+    `;
+    
+    document.body.insertAdjacentHTML('beforeend', toastHtml);
+    const toast = new bootstrap.Toast(document.querySelector('.toast:last-child'));
+    toast.show();
+    
+    // Remove toast element after it's hidden
+    setTimeout(() => {
+        const toastElement = document.querySelector('.toast:last-child');
+        if (toastElement) {
+            toastElement.remove();
+        }
+    }, 5000);
+}
+</script>
+{% endblock %}

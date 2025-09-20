@@ -1,0 +1,225 @@
+{% extends "base.html" %}
+
+{% block title %}Pending Payments - Admin{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h2 class="text-primary">Pending Payments</h2>
+                    <p class="text-muted">Verify payment proofs and approve listings</p>
+                </div>
+                <a href="{{ url_for('admin.dashboard') }}" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left me-2"></i>Back to Dashboard
+                </a>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Payments List -->
+    <div class="row">
+        <div class="col-12">
+            {% if payments %}
+                {% for payment in payments %}
+                <div class="card mb-4 shadow-sm">
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-8">
+                                <h5 class="card-title">Payment from {{ payment.seller.name }}</h5>
+                                <div class="row mb-3">
+                                    <div class="col-md-6">
+                                        <p class="card-text">
+                                            <strong>Property:</strong> {{ payment.property.title }}<br>
+                                            <strong>Location:</strong> {{ payment.property.location }}<br>
+                                            <strong>Amount:</strong> <span class="text-success">₹{{ "{:,}".format(payment.amount) }}</span><br>
+                                            <strong>Transaction ID:</strong> <code>{{ payment.transaction_id }}</code>
+                                        </p>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <p class="card-text">
+                                            <strong>Seller Email:</strong> {{ payment.seller.email }}<br>
+                                            <strong>Seller Phone:</strong> {{ payment.seller.phone }}<br>
+                                            <strong>Payment Date:</strong> {{ payment.created_at.strftime('%d %b %Y at %I:%M %p') }}<br>
+                                            <strong>Status:</strong> 
+                                            <span class="badge bg-warning">Pending Verification</span>
+                                        </p>
+                                    </div>
+                                </div>
+                                
+                                <div class="d-flex gap-2">
+                                    <button type="button" class="btn btn-primary btn-sm" 
+                                            data-bs-toggle="modal" data-bs-target="#screenshotModal{{ payment.id }}">
+                                        <i class="fas fa-image me-1"></i>View Screenshot
+                                    </button>
+                                    <button type="button" class="btn btn-info btn-sm" 
+                                            data-bs-toggle="modal" data-bs-target="#propertyModal{{ payment.id }}">
+                                        <i class="fas fa-home me-1"></i>View Property
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-4 text-end">
+                                <div class="d-grid gap-2">
+                                    <button type="button" class="btn btn-success" 
+                                            onclick="updatePaymentStatus({{ payment.id }}, 'verified')">
+                                        <i class="fas fa-check me-2"></i>Verify Payment
+                                    </button>
+                                    <button type="button" class="btn btn-danger" 
+                                            onclick="updatePaymentStatus({{ payment.id }}, 'rejected')">
+                                        <i class="fas fa-times me-2"></i>Reject Payment
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Screenshot Modal -->
+                <div class="modal fade" id="screenshotModal{{ payment.id }}" tabindex="-1">
+                    <div class="modal-dialog modal-lg">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title">Payment Screenshot - {{ payment.transaction_id }}</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                            </div>
+                            <div class="modal-body text-center">
+                                <img src="{{ url_for('uploaded_file', filename='payments/' + payment.screenshot_filename) }}" 
+                                     class="img-fluid rounded" alt="Payment Screenshot" style="max-height: 600px;">
+                                <div class="mt-3">
+                                    <p><strong>Transaction ID:</strong> <code>{{ payment.transaction_id }}</code></p>
+                                    <p><strong>Amount:</strong> ₹{{ "{:,}".format(payment.amount) }}</p>
+                                    <p><strong>Date:</strong> {{ payment.created_at.strftime('%d %b %Y at %I:%M %p') }}</p>
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                <button type="button" class="btn btn-success" 
+                                        onclick="updatePaymentStatus({{ payment.id }}, 'verified')" data-bs-dismiss="modal">
+                                    <i class="fas fa-check me-1"></i>Verify
+                                </button>
+                                <button type="button" class="btn btn-danger" 
+                                        onclick="updatePaymentStatus({{ payment.id }}, 'rejected')" data-bs-dismiss="modal">
+                                    <i class="fas fa-times me-1"></i>Reject
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Property Modal -->
+                <div class="modal fade" id="propertyModal{{ payment.id }}" tabindex="-1">
+                    <div class="modal-dialog modal-lg">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title">{{ payment.property.title }}</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                            </div>
+                            <div class="modal-body">
+                                {% if payment.property.images %}
+                                    <div id="propertyCarousel{{ payment.id }}" class="carousel slide mb-3" data-bs-ride="carousel">
+                                        <div class="carousel-inner rounded">
+                                            {% for image in payment.property.images %}
+                                            <div class="carousel-item {% if loop.first %}active{% endif %}">
+                                                <img src="{{ url_for('uploaded_file', filename='properties/' + image.filename) }}" 
+                                                     class="d-block w-100" style="height: 300px; object-fit: cover;" 
+                                                     alt="Property Image">
+                                            </div>
+                                            {% endfor %}
+                                        </div>
+                                        {% if payment.property.images|length > 1 %}
+                                        <button class="carousel-control-prev" type="button" 
+                                                data-bs-target="#propertyCarousel{{ payment.id }}" data-bs-slide="prev">
+                                            <span class="carousel-control-prev-icon"></span>
+                                        </button>
+                                        <button class="carousel-control-next" type="button" 
+                                                data-bs-target="#propertyCarousel{{ payment.id }}" data-bs-slide="next">
+                                            <span class="carousel-control-next-icon"></span>
+                                        </button>
+                                        {% endif %}
+                                    </div>
+                                {% endif %}
+                                
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <h6>Property Details</h6>
+                                        <ul class="list-unstyled">
+                                            <li><strong>Type:</strong> {{ payment.property.property_type }}</li>
+                                            <li><strong>Category:</strong> {{ payment.property.category.title() }}</li>
+                                            <li><strong>Area:</strong> {{ payment.property.area }} sq ft</li>
+                                            <li><strong>Bedrooms:</strong> {{ payment.property.bedrooms }}</li>
+                                            <li><strong>Bathrooms:</strong> {{ payment.property.bathrooms }}</li>
+                                            <li><strong>Price:</strong> ₹{{ "{:,}".format(payment.property.price) }}</li>
+                                        </ul>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <h6>Payment Details</h6>
+                                        <ul class="list-unstyled">
+                                            <li><strong>Amount:</strong> ₹{{ "{:,}".format(payment.amount) }}</li>
+                                            <li><strong>Transaction ID:</strong> <code>{{ payment.transaction_id }}</code></li>
+                                            <li><strong>Payment Date:</strong> {{ payment.created_at.strftime('%d %b %Y') }}</li>
+                                            <li><strong>Status:</strong> <span class="badge bg-warning">Pending</span></li>
+                                        </ul>
+                                    </div>
+                                </div>
+                                
+                                <h6>Description</h6>
+                                <p>{{ payment.property.description }}</p>
+                                
+                                {% if payment.property.amenities %}
+                                <h6>Amenities</h6>
+                                <p>{{ payment.property.amenities }}</p>
+                                {% endif %}
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="card">
+                    <div class="card-body text-center py-5">
+                        <i class="fas fa-credit-card fa-3x text-muted mb-3"></i>
+                        <h5 class="text-muted">No Pending Payments</h5>
+                        <p class="text-muted">All payments have been verified.</p>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<script>
+function updatePaymentStatus(paymentId, status) {
+    const action = status === 'verified' ? 'verify' : 'reject';
+    if (confirm(`Are you sure you want to ${action} this payment?`)) {
+        fetch(`/admin/payment/${paymentId}/status`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token() }}'
+            },
+            body: JSON.stringify({
+                status: status
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            } else {
+                alert('Error updating payment status');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error updating payment status');
+        });
+    }
+}
+</script>
+{% endblock %}

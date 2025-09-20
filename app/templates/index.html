@@ -1,0 +1,243 @@
+{% extends "base.html" %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="hero-section">
+    <div class="container">
+        <div class="row justify-content-center text-center">
+            <div class="col-lg-8">
+                <h1 class="hero-title">
+                    Find Your Perfect
+                    <span class="text-warning">Home in India</span>
+                </h1>
+                <p class="hero-subtitle">
+                    Discover thousands of verified properties across India. Buy, rent, or find PG accommodations with ease.
+                </p>
+                
+                <!-- Search Bar -->
+                <form method="GET" action="{{ url_for('main.properties') }}" class="search-bar d-flex align-items-center gap-2 mx-auto" style="max-width: 600px;">
+                    <div class="flex-grow-1">
+                        <input type="text" name="search" class="form-control search-input" 
+                               placeholder="Search by location, property type, or keywords..."
+                               value="{{ search_form.search.data or '' }}">
+                    </div>
+                    <button type="submit" class="search-btn">
+                        <i class="fas fa-search me-1"></i> Search
+                    </button>
+                </form>
+                
+                <!-- Quick Categories -->
+                <div class="d-flex flex-wrap justify-content-center gap-2 mt-4">
+                    <a href="{{ url_for('main.properties', category='buy') }}" class="btn btn-outline-light btn-sm">
+                        <i class="fas fa-shopping-cart me-1"></i> Buy Properties
+                    </a>
+                    <a href="{{ url_for('main.properties', category='rent') }}" class="btn btn-outline-light btn-sm">
+                        <i class="fas fa-key me-1"></i> Rent Properties
+                    </a>
+                    <a href="{{ url_for('main.properties', category='pg') }}" class="btn btn-outline-light btn-sm">
+                        <i class="fas fa-bed me-1"></i> PG & Hostels
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Stats Section -->
+<section class="py-5 bg-light">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-4 mb-4">
+                <div class="stats-card">
+                    <div class="stats-icon">
+                        <i class="fas fa-home"></i>
+                    </div>
+                    <div class="stats-number">{{ stats.properties }}+</div>
+                    <div class="stats-label">Properties Listed</div>
+                </div>
+            </div>
+            <div class="col-md-4 mb-4">
+                <div class="stats-card">
+                    <div class="stats-icon">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <div class="stats-number">{{ stats.customers }}+</div>
+                    <div class="stats-label">Happy Customers</div>
+                </div>
+            </div>
+            <div class="col-md-4 mb-4">
+                <div class="stats-card">
+                    <div class="stats-icon">
+                        <i class="fas fa-shield-alt"></i>
+                    </div>
+                    <div class="stats-number">{{ stats.sellers }}+</div>
+                    <div class="stats-label">Verified Sellers</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Categories Section -->
+<section class="py-5">
+    <div class="container">
+        <div class="text-center mb-5">
+            <h2 class="display-5 fw-bold mb-3">Explore Our Categories</h2>
+            <p class="lead text-muted">Whether you're looking to buy, rent, or find a PG, we have the perfect property for you</p>
+        </div>
+        
+        <div class="row">
+            <div class="col-lg-4 mb-4">
+                <div class="card property-card h-100">
+                    <div class="position-relative">
+                        <img src="https://images.pexels.com/photos/1396122/pexels-photo-1396122.jpeg" 
+                             class="card-img-top property-image" alt="Buy Properties">
+                        <div class="position-absolute top-0 start-0 w-100 h-100 d-flex align-items-end" 
+                             style="background: linear-gradient(transparent, rgba(0,0,0,0.7));">
+                            <div class="text-white p-4">
+                                <h5 class="card-title mb-2">Buy Properties</h5>
+                                <p class="card-text mb-3">Find your dream home with our extensive collection of properties for sale</p>
+                                <a href="{{ url_for('main.properties', category='buy') }}" class="btn btn-light">
+                                    Explore Now <i class="fas fa-arrow-right ms-1"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-lg-4 mb-4">
+                <div class="card property-card h-100">
+                    <div class="position-relative">
+                        <img src="https://images.pexels.com/photos/1571460/pexels-photo-1571460.jpeg" 
+                             class="card-img-top property-image" alt="Rent Properties">
+                        <div class="position-absolute top-0 start-0 w-100 h-100 d-flex align-items-end" 
+                             style="background: linear-gradient(transparent, rgba(0,0,0,0.7));">
+                            <div class="text-white p-4">
+                                <h5 class="card-title mb-2">Rent Properties</h5>
+                                <p class="card-text mb-3">Discover comfortable rental properties perfect for your lifestyle</p>
+                                <a href="{{ url_for('main.properties', category='rent') }}" class="btn btn-light">
+                                    Explore Now <i class="fas fa-arrow-right ms-1"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-lg-4 mb-4">
+                <div class="card property-card h-100">
+                    <div class="position-relative">
+                        <img src="https://images.pexels.com/photos/1743227/pexels-photo-1743227.jpeg" 
+                             class="card-img-top property-image" alt="PG & Hostels">
+                        <div class="position-absolute top-0 start-0 w-100 h-100 d-flex align-items-end" 
+                             style="background: linear-gradient(transparent, rgba(0,0,0,0.7));">
+                            <div class="text-white p-4">
+                                <h5 class="card-title mb-2">PG & Hostels</h5>
+                                <p class="card-text mb-3">Find affordable and safe PG accommodations for students and professionals</p>
+                                <a href="{{ url_for('main.properties', category='pg') }}" class="btn btn-light">
+                                    Explore Now <i class="fas fa-arrow-right ms-1"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Featured Properties -->
+<section class="py-5 bg-light">
+    <div class="container">
+        <div class="d-flex justify-content-between align-items-center mb-5">
+            <div>
+                <h2 class="display-6 fw-bold mb-2">Featured Properties</h2>
+                <p class="text-muted">Discover our handpicked premium properties</p>
+            </div>
+            <a href="{{ url_for('main.properties') }}" class="btn btn-outline-primary">
+                View All <i class="fas fa-arrow-right ms-1"></i>
+            </a>
+        </div>
+        
+        {% if featured_properties %}
+            <div class="row">
+                {% for property in featured_properties %}
+                    <div class="col-lg-4 col-md-6 mb-4">
+                        {% include 'components/property_card.html' %}
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="empty-state">
+                <div class="empty-state-icon">🏠</div>
+                <h3>No Featured Properties Yet</h3>
+                <p>Our admin team is working hard to review and approve amazing properties. Check back soon!</p>
+                <a href="{{ url_for('auth.register') }}" class="btn btn-primary">
+                    <i class="fas fa-user-plus me-1"></i> Join as Seller
+                </a>
+            </div>
+        {% endif %}
+    </div>
+</section>
+
+<!-- Why Choose Us -->
+<section class="py-5">
+    <div class="container">
+        <div class="text-center mb-5">
+            <h2 class="display-5 fw-bold mb-3">Why Choose Settle Space?</h2>
+            <p class="lead text-muted">We're committed to making your property search simple, secure, and successful</p>
+        </div>
+        
+        <div class="row">
+            <div class="col-lg-3 col-md-6 mb-4 text-center">
+                <div class="mb-3">
+                    <i class="fas fa-shield-alt fa-3x text-success"></i>
+                </div>
+                <h5 class="fw-bold">Verified Properties</h5>
+                <p class="text-muted">All properties are verified by our team before listing</p>
+            </div>
+            
+            <div class="col-lg-3 col-md-6 mb-4 text-center">
+                <div class="mb-3">
+                    <i class="fas fa-users fa-3x text-primary"></i>
+                </div>
+                <h5 class="fw-bold">Trusted Community</h5>
+                <p class="text-muted">Join thousands of satisfied customers and sellers</p>
+            </div>
+            
+            <div class="col-lg-3 col-md-6 mb-4 text-center">
+                <div class="mb-3">
+                    <i class="fas fa-map-marker-alt fa-3x text-warning"></i>
+                </div>
+                <h5 class="fw-bold">Pan India Coverage</h5>
+                <p class="text-muted">Properties available across all major cities in India</p>
+            </div>
+            
+            <div class="col-lg-3 col-md-6 mb-4 text-center">
+                <div class="mb-3">
+                    <i class="fas fa-star fa-3x text-info"></i>
+                </div>
+                <h5 class="fw-bold">Premium Support</h5>
+                <p class="text-muted">24/7 customer support to help you every step of the way</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- CTA Section -->
+<section class="py-5 bg-primary text-white">
+    <div class="container text-center">
+        <h2 class="display-6 fw-bold mb-3">Ready to Find Your Perfect Home?</h2>
+        <p class="lead mb-4">Join thousands of happy customers who found their ideal properties through Settle Space</p>
+        <div class="d-flex flex-column flex-sm-row gap-3 justify-content-center">
+            <a href="{{ url_for('auth.register') }}" class="btn btn-light btn-lg">
+                <i class="fas fa-user-plus me-2"></i> Get Started
+            </a>
+            <a href="{{ url_for('main.properties') }}" class="btn btn-outline-light btn-lg">
+                <i class="fas fa-search me-2"></i> Browse Properties
+            </a>
+        </div>
+    </div>
+</section>
+{% endblock %}

@@ -1,0 +1,477 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Dashboard - SettleSpace{% endblock %}
+
+{% block extra_css %}
+<style>
+    .dashboard-header {
+        background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+        color: white;
+        border-radius: 15px;
+        padding: 2rem;
+        margin-bottom: 2rem;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    }
+    
+    .stat-card {
+        background: white;
+        border-radius: 15px;
+        padding: 1.5rem;
+        box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+        border: none;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .stat-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 35px rgba(0,0,0,0.15);
+    }
+    
+    .stat-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: var(--card-accent);
+    }
+    
+    .stat-card.primary::before { --card-accent: linear-gradient(45deg, #3498db, #2980b9); }
+    .stat-card.warning::before { --card-accent: linear-gradient(45deg, #f39c12, #e67e22); }
+    .stat-card.info::before { --card-accent: linear-gradient(45deg, #1abc9c, #16a085); }
+    .stat-card.success::before { --card-accent: linear-gradient(45deg, #27ae60, #229954); }
+    
+    .stat-icon {
+        width: 60px;
+        height: 60px;
+        border-radius: 15px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        color: white;
+    }
+    
+    .stat-icon.primary { background: linear-gradient(45deg, #3498db, #2980b9); }
+    .stat-icon.warning { background: linear-gradient(45deg, #f39c12, #e67e22); }
+    .stat-icon.info { background: linear-gradient(45deg, #1abc9c, #16a085); }
+    .stat-icon.success { background: linear-gradient(45deg, #27ae60, #229954); }
+    
+    .stat-number {
+        font-size: 2.5rem;
+        font-weight: 700;
+        color: #2d3748;
+        margin: 0;
+        line-height: 1;
+    }
+    
+    .stat-label {
+        color: #718096;
+        font-size: 0.9rem;
+        font-weight: 500;
+        margin-top: 0.5rem;
+        margin-bottom: 0;
+    }
+    
+    .quick-actions-card {
+        background: white;
+        border-radius: 15px;
+        box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+        border: none;
+        overflow: hidden;
+    }
+    
+    .quick-actions-header {
+        background: linear-gradient(45deg, #34495e, #2c3e50);
+        color: white;
+        padding: 1.5rem;
+        border: none;
+    }
+    
+    .action-btn {
+        background: white;
+        border: 2px solid #e2e8f0;
+        border-radius: 12px;
+        padding: 1rem;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        color: #4a5568;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 500;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    }
+    
+    .action-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        border-color: #34495e;
+        color: #34495e;
+        text-decoration: none;
+    }
+    
+    .action-btn i {
+        margin-right: 0.5rem;
+        font-size: 1.1rem;
+    }
+    
+    .activity-card {
+        background: white;
+        border-radius: 15px;
+        box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+        border: none;
+        overflow: hidden;
+    }
+    
+    .activity-header {
+        background: linear-gradient(45deg, #34495e, #2c3e50);
+        color: white;
+        padding: 1.5rem;
+        border: none;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    
+    .activity-item {
+        padding: 1rem;
+        border-bottom: 1px solid #e2e8f0;
+        transition: all 0.3s ease;
+        cursor: pointer;
+    }
+    
+    .activity-item:hover {
+        background: #f7fafc;
+        padding-left: 1.5rem;
+    }
+    
+    .activity-item:last-child {
+        border-bottom: none;
+    }
+    
+    .activity-title {
+        font-weight: 600;
+        color: #2d3748;
+        margin-bottom: 0.25rem;
+        font-size: 1rem;
+    }
+    
+    .activity-subtitle {
+        color: #718096;
+        font-size: 0.875rem;
+        margin-bottom: 0;
+    }
+    
+    .status-badge {
+        padding: 0.25rem 0.75rem;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.025em;
+    }
+    
+    .status-pending {
+        background: #fef5e7;
+        color: #b7791f;
+    }
+    
+    .status-approved {
+        background: #f0fff4;
+        color: #22543d;
+    }
+    
+    .status-verified {
+        background: #f0fff4;
+        color: #22543d;
+    }
+    
+    .status-rejected {
+        background: #fed7d7;
+        color: #c53030;
+    }
+    
+    .view-all-btn {
+        background: rgba(255,255,255,0.2);
+        color: white;
+        border: 1px solid rgba(255,255,255,0.3);
+        border-radius: 8px;
+        padding: 0.5rem 1rem;
+        font-size: 0.875rem;
+        transition: all 0.3s ease;
+        text-decoration: none;
+    }
+    
+    .view-all-btn:hover {
+        background: rgba(255,255,255,0.3);
+        color: white;
+        text-decoration: none;
+        transform: translateY(-1px);
+    }
+    
+    .empty-state {
+        text-align: center;
+        padding: 3rem 1rem;
+        color: #a0aec0;
+    }
+    
+    .empty-state i {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+        opacity: 0.5;
+    }
+    
+    @media (max-width: 768px) {
+        .dashboard-header {
+            padding: 1.5rem;
+            text-align: center;
+        }
+        
+        .stat-card {
+            margin-bottom: 1rem;
+        }
+        
+        .action-btn {
+            padding: 0.75rem;
+            font-size: 0.875rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-4 py-3">
+    <!-- Dashboard Header -->
+    <div class="dashboard-header">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <h1 class="mb-2" style="font-weight: 700; font-size: 2.5rem;">Admin Dashboard</h1>
+                <p class="mb-0 opacity-75" style="font-size: 1.1rem;">Monitor and manage your SettleSpace platform</p>
+            </div>
+            <div class="col-md-4 text-md-end text-center mt-3 mt-md-0">
+                <div class="d-flex justify-content-center justify-content-md-end align-items-center">
+                    <div class="me-3">
+                        <i class="fas fa-calendar-alt me-2"></i>
+                        <span id="current-date"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Statistics Cards -->
+    <div class="row g-4 mb-4">
+        <div class="col-xl-3 col-md-6">
+            <div class="stat-card primary">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <h3 class="stat-number">{{ stats.total_properties or 0 }}</h3>
+                        <p class="stat-label">Total Properties</p>
+                    </div>
+                    <div class="stat-icon primary">
+                        <i class="fas fa-home"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-xl-3 col-md-6">
+            <div class="stat-card warning">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <h3 class="stat-number">{{ stats.pending_properties or 0 }}</h3>
+                        <p class="stat-label">Pending Review</p>
+                    </div>
+                    <div class="stat-icon warning">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-xl-3 col-md-6">
+            <div class="stat-card info">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <h3 class="stat-number">{{ stats.total_users or 0 }}</h3>
+                        <p class="stat-label">Total Users</p>
+                    </div>
+                    <div class="stat-icon info">
+                        <i class="fas fa-users"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-xl-3 col-md-6">
+            <div class="stat-card success">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <h3 class="stat-number">₹{{ "{:,}".format(stats.total_revenue or 0) }}</h3>
+                        <p class="stat-label">Total Revenue</p>
+                    </div>
+                    <div class="stat-icon success">
+                        <i class="fas fa-rupee-sign"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Quick Actions -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="quick-actions-card">
+                <div class="quick-actions-header">
+                    <h5 class="mb-0" style="font-weight: 600;">
+                        <i class="fas fa-bolt me-2"></i>Quick Actions
+                    </h5>
+                </div>
+                <div class="card-body p-4">
+                    <div class="row g-3">
+                        <div class="col-lg-3 col-md-6">
+                            <a href="{{ url_for('admin.pending_properties') }}" class="action-btn">
+                                <i class="fas fa-clock"></i>
+                                Review Properties
+                            </a>
+                        </div>
+                        <div class="col-lg-3 col-md-6">
+                            <a href="{{ url_for('admin.pending_payments') }}" class="action-btn">
+                                <i class="fas fa-credit-card"></i>
+                                Verify Payments
+                            </a>
+                        </div>
+                        <div class="col-lg-3 col-md-6">
+                            <a href="{{ url_for('admin.manage_users') }}" class="action-btn">
+                                <i class="fas fa-users"></i>
+                                Manage Users
+                            </a>
+                        </div>
+                        <div class="col-lg-3 col-md-6">
+                            <a href="{{ url_for('admin.all_properties') }}" class="action-btn">
+                                <i class="fas fa-home"></i>
+                                All Properties
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Recent Activities -->
+    <div class="row g-4">
+        <div class="col-lg-6">
+            <div class="activity-card">
+                <div class="activity-header">
+                    <h5 class="mb-0" style="font-weight: 600;">
+                        <i class="fas fa-building me-2"></i>Recent Properties
+                    </h5>
+                    <a href="{{ url_for('admin.all_properties') }}" class="view-all-btn">
+                        View All <i class="fas fa-arrow-right ms-1"></i>
+                    </a>
+                </div>
+                <div class="card-body p-0">
+                    {% if recent_properties %}
+                        {% for property in recent_properties %}
+                        <div class="activity-item">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div class="flex-grow-1">
+                                    <h6 class="activity-title">{{ property.title }}</h6>
+                                    <p class="activity-subtitle">
+                                        <i class="fas fa-map-marker-alt me-1"></i>{{ property.location }}
+                                    </p>
+                                </div>
+                                <div class="text-end">
+                                    {% if property.status == 'pending' %}
+                                        <span class="status-badge status-pending">Pending</span>
+                                    {% elif property.status == 'approved' %}
+                                        <span class="status-badge status-approved">Approved</span>
+                                    {% elif property.status == 'rejected' %}
+                                        <span class="status-badge status-rejected">Rejected</span>
+                                    {% endif %}
+                                    <div class="mt-2">
+                                        <small class="text-muted">{{ property.created_at.strftime('%d %b, %Y') }}</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="empty-state">
+                            <i class="fas fa-home"></i>
+                            <p class="mb-0">No recent properties</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-6">
+            <div class="activity-card">
+                <div class="activity-header">
+                    <h5 class="mb-0" style="font-weight: 600;">
+                        <i class="fas fa-credit-card me-2"></i>Recent Payments
+                    </h5>
+                    <a href="{{ url_for('admin.pending_payments') }}" class="view-all-btn">
+                        View All <i class="fas fa-arrow-right ms-1"></i>
+                    </a>
+                </div>
+                <div class="card-body p-0">
+                    {% if recent_payments %}
+                        {% for payment in recent_payments %}
+                        <div class="activity-item">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div class="flex-grow-1">
+                                    <h6 class="activity-title">{{ payment.seller.name }}</h6>
+                                    <p class="activity-subtitle">
+                                        <i class="fas fa-rupee-sign me-1"></i>₹{{ "{:,}".format(payment.amount) }}
+                                    </p>
+                                </div>
+                                <div class="text-end">
+                                    {% if payment.status == 'pending' %}
+                                        <span class="status-badge status-pending">Pending</span>
+                                    {% elif payment.status == 'verified' %}
+                                        <span class="status-badge status-verified">Verified</span>
+                                    {% elif payment.status == 'rejected' %}
+                                        <span class="status-badge status-rejected">Rejected</span>
+                                    {% endif %}
+                                    <div class="mt-2">
+                                        <small class="text-muted">{{ payment.created_at.strftime('%d %b, %Y') }}</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="empty-state">
+                            <i class="fas fa-credit-card"></i>
+                            <p class="mb-0">No recent payments</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Set current date
+document.addEventListener('DOMContentLoaded', function() {
+    const dateElement = document.getElementById('current-date');
+    if (dateElement) {
+        const today = new Date();
+        const options = { 
+            year: 'numeric', 
+            month: 'long', 
+            day: 'numeric' 
+        };
+        dateElement.textContent = today.toLocaleDateString('en-US', options);
+    }
+});
+</script>
+{% endblock %}

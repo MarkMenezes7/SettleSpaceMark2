@@ -1,0 +1,686 @@
+{% extends "base.html" %}
+
+{% block title %}Manage Users - Admin{% endblock %}
+
+{% block extra_css %}
+<style>
+    .page-header {
+        background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+        color: white;
+        border-radius: 15px;
+        padding: 2rem;
+        margin-bottom: 2rem;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    }
+    
+    .stat-card {
+        background: white;
+        border-radius: 15px;
+        padding: 1.5rem;
+        box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+        border: none;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+        margin-bottom: 1rem;
+    }
+    
+    .stat-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 35px rgba(0,0,0,0.15);
+    }
+    
+    .stat-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: var(--card-accent);
+    }
+    
+    .stat-card.primary::before { --card-accent: linear-gradient(45deg, #3498db, #2980b9); }
+    .stat-card.success::before { --card-accent: linear-gradient(45deg, #27ae60, #229954); }
+    .stat-card.info::before { --card-accent: linear-gradient(45deg, #1abc9c, #16a085); }
+    
+    .stat-icon {
+        width: 60px;
+        height: 60px;
+        border-radius: 15px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        color: white;
+    }
+    
+    .stat-icon.primary { background: linear-gradient(45deg, #3498db, #2980b9); }
+    .stat-icon.success { background: linear-gradient(45deg, #27ae60, #229954); }
+    .stat-icon.info { background: linear-gradient(45deg, #1abc9c, #16a085); }
+    
+    .stat-number {
+        font-size: 2.5rem;
+        font-weight: 700;
+        color: #2d3748;
+        margin: 0;
+        line-height: 1;
+    }
+    
+    .stat-label {
+        color: #718096;
+        font-size: 0.9rem;
+        font-weight: 500;
+        margin-top: 0.5rem;
+        margin-bottom: 0;
+    }
+    
+    .filter-card {
+        background: white;
+        border-radius: 15px;
+        box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+        border: none;
+        overflow: hidden;
+        margin-bottom: 2rem;
+    }
+    
+    .filter-header {
+        background: linear-gradient(45deg, #34495e, #2c3e50);
+        color: white;
+        padding: 1rem 1.5rem;
+        border: none;
+    }
+    
+    .users-table-card {
+        background: white;
+        border-radius: 15px;
+        box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+        border: none;
+        overflow: hidden;
+    }
+    
+    .users-table-header {
+        background: linear-gradient(45deg, #34495e, #2c3e50);
+        color: white;
+        padding: 1.5rem;
+        border: none;
+    }
+    
+    .back-btn {
+        background: rgba(255,255,255,0.1);
+        color: white;
+        border: 1px solid rgba(255,255,255,0.2);
+        border-radius: 10px;
+        padding: 0.75rem 1.5rem;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+    }
+    
+    .back-btn:hover {
+        background: rgba(255,255,255,0.2);
+        color: white;
+        text-decoration: none;
+        transform: translateY(-1px);
+    }
+    
+    .form-control, .form-select {
+        border-radius: 10px;
+        border: 2px solid #e2e8f0;
+        transition: all 0.3s ease;
+        padding: 0.75rem 1rem;
+    }
+    
+    .form-control:focus, .form-select:focus {
+        border-color: #34495e;
+        box-shadow: 0 0 0 0.2rem rgba(52, 73, 94, 0.25);
+    }
+    
+    .filter-btn {
+        background: linear-gradient(45deg, #34495e, #2c3e50);
+        border: none;
+        border-radius: 10px;
+        padding: 0.75rem 1.5rem;
+        color: white;
+        font-weight: 500;
+        transition: all 0.3s ease;
+    }
+    
+    .filter-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(52, 73, 94, 0.3);
+        color: white;
+    }
+    
+    .table {
+        margin-bottom: 0;
+    }
+    
+    .table thead th {
+        background: #f8f9fa;
+        border: none;
+        font-weight: 600;
+        color: #2d3748;
+        padding: 1rem;
+    }
+    
+    .table tbody td {
+        padding: 1rem;
+        vertical-align: middle;
+        border-top: 1px solid #e2e8f0;
+    }
+    
+    .table tbody tr:hover {
+        background: #f7fafc;
+    }
+    
+    .avatar-circle {
+        width: 45px !important;
+        height: 45px !important;
+        font-size: 1.1rem;
+        font-weight: 600;
+        background: linear-gradient(45deg, #3498db, #2980b9) !important;
+    }
+    
+    .badge {
+        padding: 0.5rem 0.75rem;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.025em;
+    }
+    
+    .badge.bg-danger {
+        background: linear-gradient(45deg, #e74c3c, #c0392b) !important;
+    }
+    
+    .badge.bg-success {
+        background: linear-gradient(45deg, #27ae60, #229954) !important;
+    }
+    
+    .badge.bg-primary {
+        background: linear-gradient(45deg, #3498db, #2980b9) !important;
+    }
+    
+    .badge.bg-warning {
+        background: linear-gradient(45deg, #f39c12, #e67e22) !important;
+    }
+    
+    .badge.bg-info {
+        background: linear-gradient(45deg, #1abc9c, #16a085) !important;
+    }
+    
+    .badge.bg-secondary {
+        background: linear-gradient(45deg, #7f8c8d, #95a5a6) !important;
+    }
+    
+    .btn-group .btn {
+        border-radius: 8px;
+        margin-right: 0.25rem;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-group .btn:hover {
+        transform: translateY(-1px);
+    }
+    
+    .btn-outline-primary {
+        border-color: #3498db;
+        color: #3498db;
+    }
+    
+    .btn-outline-primary:hover {
+        background: #3498db;
+        border-color: #3498db;
+    }
+    
+    .btn-outline-success {
+        border-color: #27ae60;
+        color: #27ae60;
+    }
+    
+    .btn-outline-success:hover {
+        background: #27ae60;
+        border-color: #27ae60;
+    }
+    
+    .btn-outline-danger {
+        border-color: #e74c3c;
+        color: #e74c3c;
+    }
+    
+    .btn-outline-danger:hover {
+        background: #e74c3c;
+        border-color: #e74c3c;
+    }
+    
+    .empty-state {
+        text-align: center;
+        padding: 4rem 2rem;
+        color: #a0aec0;
+    }
+    
+    .empty-state i {
+        font-size: 4rem;
+        margin-bottom: 1.5rem;
+        opacity: 0.5;
+    }
+    
+    .modal-content {
+        border-radius: 15px;
+        border: none;
+        box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+    }
+    
+    .modal-header {
+        background: linear-gradient(45deg, #34495e, #2c3e50);
+        color: white;
+        border-radius: 15px 15px 0 0;
+        padding: 1.5rem;
+    }
+    
+    .modal-header .btn-close {
+        filter: invert(1);
+    }
+    
+    .modal-body {
+        padding: 2rem;
+    }
+    
+    .modal-footer {
+        padding: 1.5rem 2rem;
+        border-top: 1px solid #e2e8f0;
+    }
+    
+    @media (max-width: 768px) {
+        .page-header {
+            padding: 1.5rem;
+            text-align: center;
+        }
+        
+        .stat-card {
+            margin-bottom: 1rem;
+        }
+        
+        .table-responsive {
+            border-radius: 10px;
+        }
+        
+        .btn-group {
+            flex-direction: column;
+            width: 100%;
+        }
+        
+        .btn-group .btn {
+            margin-right: 0;
+            margin-bottom: 0.25rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-4 py-3">
+    <!-- Header -->
+    <div class="page-header">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <h1 class="mb-2" style="font-weight: 700; font-size: 2.5rem;">Manage Users</h1>
+                <p class="mb-0 opacity-75" style="font-size: 1.1rem;">View and manage user accounts across your platform</p>
+            </div>
+            <a href="{{ url_for('admin.dashboard') }}" class="back-btn">
+                <i class="fas fa-arrow-left me-2"></i>Back to Dashboard
+            </a>
+        </div>
+    </div>
+    
+    <!-- User Statistics -->
+    <div class="row g-4 mb-4">
+        <div class="col-md-4">
+            <div class="stat-card primary">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <h3 class="stat-number">{{ stats.total_users or 0 }}</h3>
+                        <p class="stat-label">Total Users</p>
+                    </div>
+                    <div class="stat-icon primary">
+                        <i class="fas fa-users"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="stat-card success">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <h3 class="stat-number">{{ stats.sellers or 0 }}</h3>
+                        <p class="stat-label">Sellers</p>
+                    </div>
+                    <div class="stat-icon success">
+                        <i class="fas fa-store"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="stat-card info">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <h3 class="stat-number">{{ stats.customers or 0 }}</h3>
+                        <p class="stat-label">Customers</p>
+                    </div>
+                    <div class="stat-icon info">
+                        <i class="fas fa-user"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Filters -->
+    <div class="filter-card">
+        <div class="filter-header">
+            <h5 class="mb-0" style="font-weight: 600;">
+                <i class="fas fa-filter me-2"></i>Filter Users
+            </h5>
+        </div>
+        <div class="card-body p-4">
+            <form method="GET" class="row g-3">
+                <div class="col-md-3">
+                    <label class="form-label fw-semibold">Role</label>
+                    <select name="role" class="form-select">
+                        <option value="">All Roles</option>
+                        <option value="customer" {% if request.args.get('role') == 'customer' %}selected{% endif %}>Customer</option>
+                        <option value="seller" {% if request.args.get('role') == 'seller' %}selected{% endif %}>Seller</option>
+                        <option value="admin" {% if request.args.get('role') == 'admin' %}selected{% endif %}>Admin</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label fw-semibold">Verification Status</label>
+                    <select name="verified" class="form-select">
+                        <option value="">All Users</option>
+                        <option value="1" {% if request.args.get('verified') == '1' %}selected{% endif %}>Verified</option>
+                        <option value="0" {% if request.args.get('verified') == '0' %}selected{% endif %}>Unverified</option>
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label fw-semibold">Search</label>
+                    <input type="text" name="search" class="form-control" placeholder="Search by name or email" 
+                           value="{{ request.args.get('search', '') }}">
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">&nbsp;</label>
+                    <button type="submit" class="btn filter-btn w-100">
+                        <i class="fas fa-search me-1"></i>Filter
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Users Table -->
+    <div class="users-table-card">
+        <div class="users-table-header">
+            <h5 class="mb-0" style="font-weight: 600;">
+                <i class="fas fa-list me-2"></i>Users List
+            </h5>
+        </div>
+        <div class="card-body p-0">
+            {% if users %}
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>User</th>
+                                <th>Role</th>
+                                <th>Contact</th>
+                                <th>Status</th>
+                                <th>Joined</th>
+                                <th>Properties</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for user in users %}
+                            <tr>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <div class="avatar-circle text-white rounded-circle d-flex align-items-center justify-content-center me-3">
+                                            {{ user.name[0].upper() }}
+                                        </div>
+                                        <div>
+                                            <h6 class="mb-0 fw-semibold">{{ user.name }}</h6>
+                                            <small class="text-muted">{{ user.email }}</small>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    {% if user.role == 'admin' %}
+                                        <span class="badge bg-danger">Admin</span>
+                                    {% elif user.role == 'seller' %}
+                                        <span class="badge bg-success">Seller</span>
+                                    {% else %}
+                                        <span class="badge bg-primary">Customer</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <div>
+                                        <small><i class="fas fa-phone me-1"></i>{{ user.phone or 'Not provided' }}</small>
+                                    </div>
+                                </td>
+                                <td>
+                                    {% if user.is_verified %}
+                                        <span class="badge bg-success">
+                                            <i class="fas fa-check me-1"></i>Verified
+                                        </span>
+                                    {% else %}
+                                        <span class="badge bg-warning">
+                                            <i class="fas fa-clock me-1"></i>Unverified
+                                        </span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <small>{{ user.created_at.strftime('%d %b %Y') }}</small>
+                                </td>
+                                <td>
+                                    {% if user.role == 'seller' %}
+                                        <span class="badge bg-info">{{ user.properties|length }}</span>
+                                    {% else %}
+                                        <span class="text-muted">-</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <div class="btn-group btn-group-sm">
+                                        <button type="button" class="btn btn-outline-primary" 
+                                                data-bs-toggle="modal" data-bs-target="#userModal{{ user.id }}" title="View Details">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                        {% if not user.is_verified %}
+                                            <button type="button" class="btn btn-outline-success" 
+                                                    onclick="verifyUser({{ user.id }})" title="Verify User">
+                                                <i class="fas fa-check"></i>
+                                            </button>
+                                        {% endif %}
+                                        {% if user.role != 'admin' %}
+                                            <button type="button" class="btn btn-outline-danger" 
+                                                    onclick="toggleUserStatus({{ user.id }})" title="Toggle Status">
+                                                <i class="fas fa-ban"></i>
+                                            </button>
+                                        {% endif %}
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                
+                <!-- Pagination (if implemented) -->
+                {% if pagination %}
+                <nav aria-label="User pagination" class="p-4">
+                    <ul class="pagination justify-content-center">
+                        <!-- Add pagination links here -->
+                    </ul>
+                </nav>
+                {% endif %}
+            {% else %}
+                <div class="empty-state">
+                    <i class="fas fa-users"></i>
+                    <h5 class="text-muted mb-2">No Users Found</h5>
+                    <p class="text-muted">No users match your current filters.</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- User Detail Modals -->
+{% if users %}
+    {% for user in users %}
+    <div class="modal fade" id="userModal{{ user.id }}" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="fas fa-user-circle me-2"></i>{{ user.name }} - Profile Details
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6 class="fw-bold text-primary mb-3">
+                                <i class="fas fa-info-circle me-2"></i>Personal Information
+                            </h6>
+                            <ul class="list-unstyled">
+                                <li class="mb-2"><strong>Name:</strong> {{ user.name }}</li>
+                                <li class="mb-2"><strong>Email:</strong> {{ user.email }}</li>
+                                <li class="mb-2"><strong>Phone:</strong> {{ user.phone or 'Not provided' }}</li>
+                                <li class="mb-2"><strong>Role:</strong> {{ user.role.title() }}</li>
+                                <li class="mb-2"><strong>Status:</strong> 
+                                    {% if user.is_verified %}
+                                        <span class="badge bg-success">Verified</span>
+                                    {% else %}
+                                        <span class="badge bg-warning">Unverified</span>
+                                    {% endif %}
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <h6 class="fw-bold text-primary mb-3">
+                                <i class="fas fa-clock me-2"></i>Account Information
+                            </h6>
+                            <ul class="list-unstyled">
+                                <li class="mb-2"><strong>Member Since:</strong> {{ user.created_at.strftime('%d %b %Y') }}</li>
+                                <li class="mb-2"><strong>Last Login:</strong> {{ user.last_login.strftime('%d %b %Y') if user.last_login else 'Never' }}</li>
+                                {% if user.role == 'seller' %}
+                                    <li class="mb-2"><strong>Properties Listed:</strong> {{ user.properties|length }}</li>
+                                    <li class="mb-2"><strong>Approved Properties:</strong> {{ user.properties|selectattr('status', 'equalto', 'approved')|list|length }}</li>
+                                {% endif %}
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    {% if user.role == 'seller' and user.properties %}
+                    <hr class="my-4">
+                    <h6 class="fw-bold text-primary mb-3">
+                        <i class="fas fa-building me-2"></i>Recent Properties
+                    </h6>
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Title</th>
+                                    <th>Category</th>
+                                    <th>Status</th>
+                                    <th>Date</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for property in user.properties[:5] %}
+                                <tr>
+                                    <td>{{ property.title }}</td>
+                                    <td><span class="badge bg-secondary">{{ property.category.title() }}</span></td>
+                                    <td>
+                                        {% if property.status == 'approved' %}
+                                            <span class="badge bg-success">Approved</span>
+                                        {% elif property.status == 'pending' %}
+                                            <span class="badge bg-warning">Pending</span>
+                                        {% elif property.status == 'rejected' %}
+                                            <span class="badge bg-danger">Rejected</span>
+                                        {% endif %}
+                                    </td>
+                                    <td><small>{{ property.created_at.strftime('%d %b') }}</small></td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% endif %}
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    {% if not user.is_verified %}
+                        <button type="button" class="btn btn-success" onclick="verifyUser({{ user.id }})" data-bs-dismiss="modal">
+                            <i class="fas fa-check me-1"></i>Verify User
+                        </button>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+{% endif %}
+
+<script>
+function verifyUser(userId) {
+    if (confirm('Are you sure you want to verify this user?')) {
+        fetch(`/admin/user/${userId}/verify`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token() }}'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            } else {
+                alert('Error verifying user');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error verifying user');
+        });
+    }
+}
+
+function toggleUserStatus(userId) {
+    if (confirm('Are you sure you want to toggle this user\'s status?')) {
+        fetch(`/admin/user/${userId}/toggle-status`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token() }}'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            } else {
+                alert('Error updating user status');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error updating user status');
+        });
+    }
+}
+</script>
+{% endblock %}

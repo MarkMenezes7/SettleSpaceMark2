@@ -1,0 +1,204 @@
+{% extends "base.html" %}
+
+{% block title %}
+{% if category %}
+    {% if category == 'buy' %}Properties for Sale
+    {% elif category == 'rent' %}Properties for Rent
+    {% else %}PG & Hostels
+    {% endif %}
+{% else %}All Properties
+{% endif %} - Settle Space
+{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Header -->
+    <div class="mb-4">
+        <h1 class="display-6 fw-bold mb-2">
+            {% if category %}
+                {% if category == 'buy' %}Properties for Sale
+                {% elif category == 'rent' %}Properties for Rent
+                {% else %}PG & Hostels
+                {% endif %}
+            {% else %}All Properties
+            {% endif %}
+        </h1>
+        <p class="text-muted">Discover your perfect property from our verified listings</p>
+    </div>
+
+    <!-- Search Filters -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="GET" id="propertySearchForm">
+                <div class="row g-3">
+                    <!-- Search Input -->
+                    <div class="col-md-4">
+                        {{ search_form.search.label(class="form-label") }}
+                        {{ search_form.search(class="form-control", placeholder="Search properties...") }}
+                    </div>
+                    
+                    <!-- Category -->
+                    <div class="col-md-2">
+                        {{ search_form.category.label(class="form-label") }}
+                        {{ search_form.category(class="form-select") }}
+                    </div>
+                    
+                    <!-- Location -->
+                    <div class="col-md-3">
+                        {{ search_form.location.label(class="form-label") }}
+                        {{ search_form.location(class="form-control", placeholder="Enter location") }}
+                    </div>
+                    
+                    <!-- Property Type -->
+                    <div class="col-md-3">
+                        {{ search_form.property_type.label(class="form-label") }}
+                        {{ search_form.property_type(class="form-select") }}
+                    </div>
+                    
+                    <!-- Price Range -->
+                    <div class="col-md-3">
+                        {{ search_form.min_price.label(class="form-label") }}
+                        {{ search_form.min_price(class="form-control", placeholder="Min Price") }}
+                    </div>
+                    
+                    <div class="col-md-3">
+                        {{ search_form.max_price.label(class="form-label") }}
+                        {{ search_form.max_price(class="form-control", placeholder="Max Price") }}
+                    </div>
+                    
+                    <!-- Bedrooms -->
+                    <div class="col-md-2">
+                        {{ search_form.bedrooms.label(class="form-label") }}
+                        {{ search_form.bedrooms(class="form-select") }}
+                    </div>
+                    
+                    <!-- Search Button -->
+                    <div class="col-md-4 d-flex align-items-end">
+                        <button type="submit" class="btn btn-primary me-2">
+                            <i class="fas fa-search me-1"></i> Search
+                        </button>
+                        <a href="{{ url_for('main.properties') }}" class="btn btn-outline-secondary">
+                            <i class="fas fa-times me-1"></i> Clear
+                        </a>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Results Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h5 class="mb-0">
+                {% if properties.items %}
+                    {{ properties.total }} {{ 'property' if properties.total == 1 else 'properties' }} found
+                {% else %}
+                    No properties found
+                {% endif %}
+            </h5>
+        </div>
+        
+        <div class="d-flex align-items-center gap-2">
+            <small class="text-muted">Sort by:</small>
+            <select class="form-select form-select-sm" style="width: auto;" onchange="updateSort(this.value)">
+                <option value="newest">Newest First</option>
+                <option value="oldest">Oldest First</option>
+                <option value="price-low">Price: Low to High</option>
+                <option value="price-high">Price: High to Low</option>
+            </select>
+        </div>
+    </div>
+
+    <!-- Properties Grid -->
+    {% if properties.items %}
+        <div class="row">
+            {% for property in properties.items %}
+                <div class="col-lg-4 col-md-6 mb-4">
+                    {% include 'components/property_card.html' %}
+                </div>
+            {% endfor %}
+        </div>
+        
+        <!-- Pagination -->
+        {% if properties.pages > 1 %}
+            <nav aria-label="Properties pagination" class="mt-5">
+                <ul class="pagination justify-content-center">
+                    {% if properties.has_prev %}
+                        <li class="page-item">
+                            <a class="page-link" href="{{ url_for('main.properties', page=properties.prev_num, **request.args) }}">
+                                <i class="fas fa-chevron-left"></i>
+                            </a>
+                        </li>
+                    {% endif %}
+                    
+                    {% for page_num in properties.iter_pages() %}
+                        {% if page_num %}
+                            {% if page_num != properties.page %}
+                                <li class="page-item">
+                                    <a class="page-link" href="{{ url_for('main.properties', page=page_num, **request.args) }}">
+                                        {{ page_num }}
+                                    </a>
+                                </li>
+                            {% else %}
+                                <li class="page-item active">
+                                    <span class="page-link">{{ page_num }}</span>
+                                </li>
+                            {% endif %}
+                        {% else %}
+                            <li class="page-item disabled">
+                                <span class="page-link">...</span>
+                            </li>
+                        {% endif %}
+                    {% endfor %}
+                    
+                    {% if properties.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="{{ url_for('main.properties', page=properties.next_num, **request.args) }}">
+                                <i class="fas fa-chevron-right"></i>
+                            </a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </nav>
+        {% endif %}
+    {% else %}
+        <!-- Empty State -->
+        <div class="empty-state">
+            <div class="empty-state-icon">🏠</div>
+            <h3>No Properties Found</h3>
+            <p>We couldn't find any properties matching your criteria. This could be because:</p>
+            <ul class="list-unstyled text-muted">
+                <li>• No properties have been approved by admin yet</li>
+                <li>• Your search filters are too specific</li>
+                <li>• Properties in this category are not available</li>
+            </ul>
+            <div class="mt-4">
+                <a href="{{ url_for('main.properties') }}" class="btn btn-primary me-2">
+                    <i class="fas fa-search me-1"></i> Browse All Properties
+                </a>
+                {% if not current_user.is_authenticated or current_user.role != 'seller' %}
+                    <a href="{{ url_for('auth.register') }}" class="btn btn-outline-primary">
+                        <i class="fas fa-plus me-1"></i> List Your Property
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+    {% endif %}
+</div>
+
+<script>
+function updateSort(sortBy) {
+    const url = new URL(window.location);
+    url.searchParams.set('sort', sortBy);
+    window.location.href = url.toString();
+}
+
+// Set current sort value
+document.addEventListener('DOMContentLoaded', function() {
+    const sortSelect = document.querySelector('select[onchange*="updateSort"]');
+    const urlParams = new URLSearchParams(window.location.search);
+    const currentSort = urlParams.get('sort') || 'newest';
+    sortSelect.value = currentSort;
+});
+</script>
+{% endblock %}
