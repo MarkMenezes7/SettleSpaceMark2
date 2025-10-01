@@ -1,12 +1,14 @@
 <div class="card property-card h-100">
-    <div class="position-relative">
+    <div class="position-relative overflow-hidden">
         {% if property.images %}
-            <img src="{{ url_for('main.uploaded_file', filename=property.images[0].filename) }}" 
+            <img src="{{ url_for('main.uploaded_file', filename=property.images[0].filename) }}"
                  class="card-img-top property-image" alt="{{ property.title }}"
-                 onerror="this.src='https://images.pexels.com/photos/1396122/pexels-photo-1396122.jpeg'">
+                 onerror="this.src='https://images.pexels.com/photos/1396122/pexels-photo-1396122.jpeg'"
+                 loading="lazy">
         {% else %}
-            <img src="https://images.pexels.com/photos/1396122/pexels-photo-1396122.jpeg" 
-                 class="card-img-top property-image" alt="{{ property.title }}">
+            <img src="https://images.pexels.com/photos/1396122/pexels-photo-1396122.jpeg"
+                 class="card-img-top property-image" alt="{{ property.title }}"
+                 loading="lazy">
         {% endif %}
         
         <!-- Category Badge -->
@@ -19,10 +21,12 @@
         
         <!-- Favorite Button (for logged in customers) -->
         {% if current_user.is_authenticated and current_user.role == 'customer' %}
-            <button class="btn btn-sm position-absolute top-0 end-0 m-3 favorite-btn" 
+            <button class="btn btn-sm position-absolute top-0 end-0 m-3 favorite-btn"
                     data-property-id="{{ property.id }}"
-                    style="background: rgba(255,255,255,0.9);">
-                <i class="far fa-heart"></i>
+                    style="background: rgba(255,255,255,0.95); backdrop-filter: blur(10px); border-radius: 50%; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; border: none; box-shadow: 0 4px 6px rgba(0,0,0,0.1); z-index: 2; transition: all 0.3s ease;"
+                    onmouseover="this.style.transform='scale(1.1)'; this.style.boxShadow='0 6px 12px rgba(0,0,0,0.15)'"
+                    onmouseout="this.style.transform='scale(1)'; this.style.boxShadow='0 4px 6px rgba(0,0,0,0.1)'">
+                <i class="far fa-heart" style="font-size: 1.1rem;"></i>
             </button>
         {% endif %}
         
@@ -36,14 +40,16 @@
     
     <div class="card-body d-flex flex-column">
         <!-- Price -->
-        <div class="property-price">
-            {% if property.category == 'buy' %}
-                ₹{{ "{:,.0f}".format(property.price / 100000) }}L
-            {% elif property.category == 'rent' %}
-                ₹{{ "{:,}".format(property.price) }}/month
-            {% else %}
-                ₹{{ "{:,}".format(property.price) }}/month
-            {% endif %}
+        <div class="property-price" style="display: flex; align-items: center; gap: 0.5rem;">
+            <span style="background: linear-gradient(135deg, #2563eb 0%, #3b82f6 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">
+                {% if property.category == 'buy' %}
+                    ₹{{ "{:,.0f}".format(property.price / 100000) }}L
+                {% elif property.category == 'rent' %}
+                    ₹{{ "{:,}".format(property.price) }}/mo
+                {% else %}
+                    ₹{{ "{:,}".format(property.price) }}/mo
+                {% endif %}
+            </span>
         </div>
         
         <!-- Title -->
@@ -56,14 +62,23 @@
         </div>
         
         <!-- Property Features -->
-        <div class="property-features">
+        <div class="property-features" style="display: flex; gap: 1rem; flex-wrap: wrap;">
             {% if property.bedrooms > 0 %}
-                <span><i class="fas fa-bed me-1"></i>{{ property.bedrooms }} Bed</span>
+                <span style="display: flex; align-items: center; gap: 0.375rem; padding: 0.375rem 0.75rem; background: #f1f5f9; border-radius: 0.5rem; font-size: 0.85rem; font-weight: 500;">
+                    <i class="fas fa-bed" style="color: #64748b;"></i>
+                    {{ property.bedrooms }} Bed
+                </span>
             {% endif %}
             {% if property.bathrooms > 0 %}
-                <span><i class="fas fa-bath me-1"></i>{{ property.bathrooms }} Bath</span>
+                <span style="display: flex; align-items: center; gap: 0.375rem; padding: 0.375rem 0.75rem; background: #f1f5f9; border-radius: 0.5rem; font-size: 0.85rem; font-weight: 500;">
+                    <i class="fas fa-bath" style="color: #64748b;"></i>
+                    {{ property.bathrooms }} Bath
+                </span>
             {% endif %}
-            <span><i class="fas fa-ruler-combined me-1"></i>{{ property.area }} sq ft</span>
+            <span style="display: flex; align-items: center; gap: 0.375rem; padding: 0.375rem 0.75rem; background: #f1f5f9; border-radius: 0.5rem; font-size: 0.85rem; font-weight: 500;">
+                <i class="fas fa-ruler-combined" style="color: #64748b;"></i>
+                {{ property.area }} sq ft
+            </span>
         </div>
         
         <!-- Amenities Preview -->
@@ -80,27 +95,30 @@
         {% endif %}
         
         <!-- Seller Info -->
-        <div class="d-flex justify-content-between align-items-center mt-auto pt-3 border-top">
-            <div class="d-flex align-items-center">
-                <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-center me-2" 
-                     style="width: 32px; height: 32px; font-size: 0.8rem;">
+        <div class="d-flex justify-content-between align-items-center mt-auto pt-3 border-top" style="border-color: #f1f5f9 !important;">
+            <div class="d-flex align-items-center gap-2">
+                <div class="rounded-circle d-flex align-items-center justify-content-center"
+                     style="width: 36px; height: 36px; font-size: 0.85rem; font-weight: 600; background: linear-gradient(135deg, #2563eb 0%, #3b82f6 100%); color: white; box-shadow: 0 2px 8px rgba(37, 99, 235, 0.3);">
                     {{ property.seller.name[0].upper() }}
                 </div>
-                <small class="text-muted">{{ property.seller.name }}</small>
+                <div>
+                    <small class="text-muted d-block" style="font-size: 0.75rem; line-height: 1.2;">Listed by</small>
+                    <small style="font-weight: 600; color: #334155;">{{ property.seller.name }}</small>
+                </div>
             </div>
-            <small class="text-muted">{{ property.created_at.strftime('%b %d') }}</small>
+            <small class="text-muted" style="font-size: 0.75rem;">{{ property.created_at.strftime('%b %d, %Y') }}</small>
         </div>
         
         <!-- View Details Button -->
         <div class="mt-3">
             {% if current_user.is_authenticated %}
-                <a href="{{ url_for('main.property_detail', id=property.id) }}" class="btn btn-primary w-100">
-                    <i class="fas fa-eye me-1"></i> View Details
+                <a href="{{ url_for('main.property_detail', id=property.id) }}" class="btn btn-primary w-100" style="font-weight: 600; padding: 0.75rem;">
+                    <i class="fas fa-eye me-2"></i> View Details
                 </a>
             {% else %}
-                <a href="{{ url_for('auth.login', next=url_for('main.property_detail', id=property.id)) }}" 
-                   class="btn btn-outline-primary w-100">
-                    <i class="fas fa-sign-in-alt me-1"></i> Login to View
+                <a href="{{ url_for('auth.login', next=url_for('main.property_detail', id=property.id)) }}"
+                   class="btn btn-outline-primary w-100" style="font-weight: 600; padding: 0.75rem; border-width: 2px;">
+                    <i class="fas fa-sign-in-alt me-2"></i> Login to View
                 </a>
             {% endif %}
         </div>

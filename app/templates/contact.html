@@ -1,0 +1,120 @@
+{% extends "base.html" %}
+
+{% block title %}Contact Us - Settle Space{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <div class="text-center mb-5">
+                <h1 class="display-4 fw-bold mb-3">Get in Touch</h1>
+                <p class="lead text-muted">We'd love to hear from you. Reach out to us anytime!</p>
+            </div>
+
+            <div class="row g-4">
+                <div class="col-lg-8">
+                    <div class="card shadow-lg border-0">
+                        <div class="card-body p-5">
+                            <h2 class="h4 mb-4">Send us a Message</h2>
+                            <form>
+                                <div class="row g-3">
+                                    <div class="col-md-6">
+                                        <label class="form-label">Full Name</label>
+                                        <input type="text" class="form-control" placeholder="Your name" required>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label">Email Address</label>
+                                        <input type="email" class="form-control" placeholder="your@email.com" required>
+                                    </div>
+                                    <div class="col-12">
+                                        <label class="form-label">Subject</label>
+                                        <input type="text" class="form-control" placeholder="How can we help?" required>
+                                    </div>
+                                    <div class="col-12">
+                                        <label class="form-label">Message</label>
+                                        <textarea class="form-control" rows="6" placeholder="Tell us more about your inquiry..." required></textarea>
+                                    </div>
+                                    <div class="col-12">
+                                        <button type="submit" class="btn btn-primary btn-lg">
+                                            <i class="fas fa-paper-plane me-2"></i>Send Message
+                                        </button>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-4">
+                    <div class="card shadow border-0 mb-4">
+                        <div class="card-body p-4">
+                            <div class="d-flex align-items-start mb-4">
+                                <div class="me-3">
+                                    <i class="fas fa-map-marker-alt fa-2x text-primary"></i>
+                                </div>
+                                <div>
+                                    <h3 class="h6 mb-2">Address</h3>
+                                    <p class="text-muted mb-0">
+                                        Tower A, Business District<br>
+                                        BKC, Mumbai<br>
+                                        Maharashtra 400051
+                                    </p>
+                                </div>
+                            </div>
+
+                            <div class="d-flex align-items-start mb-4">
+                                <div class="me-3">
+                                    <i class="fas fa-phone fa-2x text-success"></i>
+                                </div>
+                                <div>
+                                    <h3 class="h6 mb-2">Phone</h3>
+                                    <p class="text-muted mb-0">+91 98765 43210</p>
+                                    <small class="text-muted">24/7 Support</small>
+                                </div>
+                            </div>
+
+                            <div class="d-flex align-items-start">
+                                <div class="me-3">
+                                    <i class="fas fa-envelope fa-2x text-info"></i>
+                                </div>
+                                <div>
+                                    <h3 class="h6 mb-2">Email</h3>
+                                    <p class="text-muted mb-0">hello@settlespace.com</p>
+                                    <small class="text-muted">We reply within 24 hours</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card shadow border-0">
+                        <div class="card-body p-4">
+                            <h3 class="h6 mb-3">Follow Us</h3>
+                            <div class="d-flex gap-2">
+                                <a href="#" class="btn btn-outline-primary btn-sm">
+                                    <i class="fab fa-facebook-f"></i>
+                                </a>
+                                <a href="#" class="btn btn-outline-info btn-sm">
+                                    <i class="fab fa-twitter"></i>
+                                </a>
+                                <a href="#" class="btn btn-outline-danger btn-sm">
+                                    <i class="fab fa-instagram"></i>
+                                </a>
+                                <a href="#" class="btn btn-outline-primary btn-sm">
+                                    <i class="fab fa-linkedin-in"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="text-center mt-5">
+                <div class="alert alert-info border-0 shadow-sm">
+                    <i class="fas fa-info-circle me-2"></i>
+                    <strong>Looking for property support?</strong> Use our chatbot for instant assistance!
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
