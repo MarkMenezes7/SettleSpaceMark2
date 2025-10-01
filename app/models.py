@@ -1,7 +1,9 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
+import secrets
+import string
 from app import db, login_manager
 
 @login_manager.user_loader
@@ -11,13 +13,17 @@ def load_user(user_id):
 class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
-    email = db.Column(db.String(120), unique=True, nullable=False)
-    phone = db.Column(db.String(15), nullable=False)
+    email = db.Column(db.String(120), unique=True, nullable=False, index=True)
+    phone = db.Column(db.String(15), nullable=False, index=True)
     password_hash = db.Column(db.String(255), nullable=False)
     role = db.Column(db.String(20), nullable=False, default='customer')  # customer, seller, admin
     upi_id = db.Column(db.String(100))  # For sellers
     is_verified = db.Column(db.Boolean, default=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    # 2FA fields
+    two_factor_enabled = db.Column(db.Boolean, default=True)
+    two_factor_method = db.Column(db.String(10), default='email')  # email or sms
     
     # Relationships
     properties = db.relationship('Property', backref='seller', lazy=True)
@@ -25,6 +31,7 @@ class User(UserMixin, db.Model):
     inquiries_received = db.relationship('Inquiry', foreign_keys='Inquiry.seller_id', backref='property_seller', lazy=True)
     favorites = db.relationship('Favorite', backref='user', lazy=True)
     payments = db.relationship('Payment', backref='seller', lazy=True)
+    otp_codes = db.relationship('OTPCode', backref='user', lazy=True)
     
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
@@ -32,8 +39,74 @@ class User(UserMixin, db.Model):
     def check_password(self, password):
         return check_password_hash(self.password_hash, password)
     
+    def generate_otp(self, method='email'):
+        """Generate a new OTP code for this user (for email or direct SMS)"""
+        # Delete any existing OTP codes for this user
+        OTPCode.query.filter_by(user_id=self.id, used=False).delete()
+        
+        # Generate 6-digit OTP
+        otp_code = ''.join(secrets.choice(string.digits) for _ in range(6))
+        
+        # Create new OTP record
+        otp = OTPCode(
+            user_id=self.id,
+            code=otp_code,
+            method=method,
+            expires_at=datetime.utcnow() + timedelta(minutes=10)  # 10 minutes expiry
+        )
+        db.session.add(otp)
+        db.session.commit()
+        
+        return otp_code
+    
+    def verify_otp(self, code):
+        """Verify OTP code - handles both internal OTP and Twilio Verify API"""
+        from flask import current_app
+        
+        # If SMS and we have Verify Service SID, use Twilio Verify API
+        if (self.two_factor_method == 'sms' and 
+            current_app.config.get('TWILIO_VERIFY_SERVICE_SID')):
+            
+            # Import here to avoid circular imports
+            from app.services.two_factor import TwoFactorService
+            return TwoFactorService.verify_sms_otp_verify_api(self.phone, code)
+        
+        # Otherwise, use our internal OTP system
+        otp = OTPCode.query.filter_by(
+            user_id=self.id,
+            code=code,
+            used=False
+        ).first()
+        
+        if not otp:
+            return False
+        
+        if datetime.utcnow() > otp.expires_at:
+            return False
+        
+        # Mark as used
+        otp.used = True
+        db.session.commit()
+        
+        return True
+    
     def __repr__(self):
         return f'<User {self.email}>'
+
+class OTPCode(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    code = db.Column(db.String(6), nullable=False)
+    method = db.Column(db.String(10), nullable=False)  # email or sms
+    expires_at = db.Column(db.DateTime, nullable=False)
+    used = db.Column(db.Boolean, default=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    def is_expired(self):
+        return datetime.utcnow() > self.expires_at
+    
+    def __repr__(self):
+        return f'<OTPCode {self.code} for User {self.user_id}>'
 
 class Property(db.Model):
     id = db.Column(db.Integer, primary_key=True)

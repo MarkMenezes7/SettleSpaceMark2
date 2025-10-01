@@ -17,8 +17,8 @@
                         <p class="text-muted">Create your account to start listing properties</p>
                     </div>
 
-                    <!-- Registration Form -->
-                    <form method="POST" class="needs-validation" novalidate>
+                    <!-- Registration Form - SIMPLIFIED WITHOUT COMPLEX JAVASCRIPT -->
+                    <form method="POST" action="{{ url_for('auth.register_seller') }}">
                         {{ form.hidden_tag() }}
                         
                         <!-- Name -->
@@ -64,7 +64,7 @@
                                 <span class="input-group-text">
                                     <i class="fas fa-phone"></i>
                                 </span>
-                                {{ form.phone(class="form-control", placeholder="Enter your phone number") }}
+                                {{ form.phone(class="form-control", placeholder="10-digit mobile number") }}
                             </div>
                             {% if form.phone.errors %}
                                 <div class="text-danger small mt-1">
@@ -82,7 +82,12 @@
                                 <span class="input-group-text">
                                     <i class="fas fa-credit-card"></i>
                                 </span>
-                                {{ form.upi_id(class="form-control", placeholder="your-upi@paytm") }}
+                                {{ form.upi_id(class="form-control", placeholder="yourname@paytm") }}
+                            </div>
+                            <div class="form-text">
+                                <i class="fas fa-info-circle me-1"></i>
+                                Required for receiving listing fee payments
+                                <br><small class="text-muted">Examples: yourname@paytm, yourname@gpay, yourname@phonepe</small>
                             </div>
                             {% if form.upi_id.errors %}
                                 <div class="text-danger small mt-1">
@@ -91,10 +96,6 @@
                                     {% endfor %}
                                 </div>
                             {% endif %}
-                            <div class="form-text">
-                                <i class="fas fa-info-circle me-1"></i>
-                                Required for receiving listing fee payments
-                            </div>
                         </div>
 
                         <!-- Password -->
@@ -104,7 +105,7 @@
                                 <span class="input-group-text">
                                     <i class="fas fa-lock"></i>
                                 </span>
-                                {{ form.password(class="form-control", placeholder="Create a password") }}
+                                {{ form.password(class="form-control", placeholder="Create a strong password") }}
                             </div>
                             {% if form.password.errors %}
                                 <div class="text-danger small mt-1">
@@ -116,7 +117,7 @@
                         </div>
 
                         <!-- Confirm Password -->
-                        <div class="mb-4">
+                        <div class="mb-3">
                             {{ form.password2.label(class="form-label") }}
                             <div class="input-group">
                                 <span class="input-group-text">
@@ -133,6 +134,33 @@
                             {% endif %}
                         </div>
 
+                        <!-- 2FA Method Selection -->
+                        <div class="mb-4">
+                            {{ form.two_factor_method.label(class="form-label") }}
+                            <div class="bg-light p-3 rounded">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="two_factor_method" id="emailMethod" value="email" checked>
+                                    <label class="form-check-label" for="emailMethod">
+                                        <i class="fas fa-envelope text-primary me-2"></i>
+                                        <strong>Email Verification (Recommended)</strong>
+                                        <br><small class="text-muted">Get verification codes via email - more reliable</small>
+                                    </label>
+                                </div>
+                                <div class="form-check mt-2">
+                                    <input class="form-check-input" type="radio" name="two_factor_method" id="smsMethod" value="sms">
+                                    <label class="form-check-label" for="smsMethod">
+                                        <i class="fas fa-sms text-success me-2"></i>
+                                        <strong>SMS Verification</strong>
+                                        <br><small class="text-muted">Get verification codes via SMS</small>
+                                    </label>
+                                </div>
+                            </div>
+                            <small class="text-info">
+                                <i class="fas fa-shield-alt me-1"></i>
+                                Two-factor authentication keeps your seller account secure
+                            </small>
+                        </div>
+
                         <!-- Terms and Conditions -->
                         <div class="mb-4">
                             <div class="form-check">
@@ -140,6 +168,12 @@
                                 <label class="form-check-label small" for="terms">
                                     I agree to the <a href="#" class="text-decoration-none">Terms and Conditions</a> 
                                     and <a href="#" class="text-decoration-none">Privacy Policy</a>
+                                </label>
+                            </div>
+                            <div class="form-check mt-2">
+                                <input class="form-check-input" type="checkbox" id="sellerAgreement" required>
+                                <label class="form-check-label small" for="sellerAgreement">
+                                    I understand that I will need to pay a listing fee of ₹500 per property
                                 </label>
                             </div>
                         </div>
