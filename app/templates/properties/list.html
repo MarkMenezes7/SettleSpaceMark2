@@ -11,118 +11,143 @@
 {% endblock %}
 
 {% block content %}
-<div class="container py-4">
-    <!-- Header -->
-    <div class="mb-4">
-        <h1 class="display-6 fw-bold mb-2">
-            {% if category %}
-                {% if category == 'buy' %}Properties for Sale
-                {% elif category == 'rent' %}Properties for Rent
-                {% else %}PG & Hostels
-                {% endif %}
-            {% else %}All Properties
+<!-- Page Header -->
+<div class="page-header">
+    <h1>
+        {% if category %}
+            {% if category == 'buy' %}Properties for Sale
+            {% elif category == 'rent' %}Properties for Rent
+            {% else %}PG & Hostels
             {% endif %}
-        </h1>
-        <p class="text-muted">Discover your perfect property from our verified listings</p>
-    </div>
+        {% else %}All Properties
+        {% endif %}
+    </h1>
+    <p>Discover your perfect property from our verified listings</p>
+</div>
 
-    <!-- Search Filters -->
-    <div class="card mb-4">
-        <div class="card-body">
-            <form method="GET" id="propertySearchForm">
-                <div class="row g-3">
-                    <!-- Search Input -->
-                    <div class="col-md-4">
-                        {{ search_form.search.label(class="form-label") }}
-                        {{ search_form.search(class="form-control", placeholder="Search properties...") }}
-                    </div>
-                    
-                    <!-- Category -->
-                    <div class="col-md-2">
-                        {{ search_form.category.label(class="form-label") }}
-                        {{ search_form.category(class="form-select") }}
-                    </div>
-                    
-                    <!-- Location -->
-                    <div class="col-md-3">
-                        {{ search_form.location.label(class="form-label") }}
-                        {{ search_form.location(class="form-control", placeholder="Enter location") }}
-                    </div>
-                    
-                    <!-- Property Type -->
-                    <div class="col-md-3">
-                        {{ search_form.property_type.label(class="form-label") }}
-                        {{ search_form.property_type(class="form-select") }}
-                    </div>
-                    
-                    <!-- Price Range -->
-                    <div class="col-md-3">
-                        {{ search_form.min_price.label(class="form-label") }}
-                        {{ search_form.min_price(class="form-control", placeholder="Min Price") }}
-                    </div>
-                    
-                    <div class="col-md-3">
-                        {{ search_form.max_price.label(class="form-label") }}
-                        {{ search_form.max_price(class="form-control", placeholder="Max Price") }}
-                    </div>
-                    
-                    <!-- Bedrooms -->
-                    <div class="col-md-2">
-                        {{ search_form.bedrooms.label(class="form-label") }}
-                        {{ search_form.bedrooms(class="form-select") }}
-                    </div>
-                    
-                    <!-- Search Button -->
-                    <div class="col-md-4 d-flex align-items-end">
-                        <button type="submit" class="btn btn-primary me-2">
-                            <i class="fas fa-search me-1"></i> Search
-                        </button>
-                        <a href="{{ url_for('main.properties') }}" class="btn btn-outline-secondary">
-                            <i class="fas fa-times me-1"></i> Clear
-                        </a>
-                    </div>
+<!-- Search Filters -->
+<div class="container py-4">
+    <div class="glass-card" style="padding: 2rem;">
+        <form method="GET" id="propertySearchForm">
+            <div class="search-row">
+                <div class="search-group">
+                    {{ search_form.search.label(class="form-label") }}
+                    {{ search_form.search(class="form-control", placeholder="Search properties...") }}
                 </div>
-            </form>
-        </div>
-    </div>
 
-    <!-- Results Header -->
+                <div class="search-group">
+                    {{ search_form.category.label(class="form-label") }}
+                    {{ search_form.category(class="form-select") }}
+                </div>
+
+                <div class="search-group">
+                    {{ search_form.location.label(class="form-label") }}
+                    {{ search_form.location(class="form-control", placeholder="Enter location") }}
+                </div>
+
+                <div class="search-group">
+                    {{ search_form.property_type.label(class="form-label") }}
+                    {{ search_form.property_type(class="form-select") }}
+                </div>
+
+                <div class="search-group">
+                    {{ search_form.min_price.label(class="form-label") }}
+                    {{ search_form.min_price(class="form-control", placeholder="Min Price") }}
+                </div>
+
+                <div class="search-group">
+                    {{ search_form.max_price.label(class="form-label") }}
+                    {{ search_form.max_price(class="form-control", placeholder="Max Price") }}
+                </div>
+
+                <div class="search-group">
+                    {{ search_form.bedrooms.label(class="form-label") }}
+                    {{ search_form.bedrooms(class="form-select") }}
+                </div>
+
+                <div class="search-group" style="display: flex; align-items: flex-end;">
+                    <button type="submit" class="search-btn" style="width: 100%;">
+                        <i class="fas fa-search me-1"></i> Search
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Results -->
+<div class="container" style="padding: 2rem 20px 4rem;">
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <div>
-            <h5 class="mb-0">
-                {% if properties.items %}
-                    {{ properties.total }} {{ 'property' if properties.total == 1 else 'properties' }} found
-                {% else %}
-                    No properties found
-                {% endif %}
-            </h5>
-        </div>
-        
-        <div class="d-flex align-items-center gap-2">
-            <small class="text-muted">Sort by:</small>
-            <select class="form-select form-select-sm" style="width: auto;" onchange="updateSort(this.value)">
-                <option value="newest">Newest First</option>
-                <option value="oldest">Oldest First</option>
-                <option value="price-low">Price: Low to High</option>
-                <option value="price-high">Price: High to Low</option>
-            </select>
-        </div>
+        <h5 style="color: white; margin: 0;">
+            {% if properties.items %}
+                {{ properties.total }} {{ 'property' if properties.total == 1 else 'properties' }} found
+            {% else %}
+                No properties found
+            {% endif %}
+        </h5>
     </div>
 
     <!-- Properties Grid -->
     {% if properties.items %}
-        <div class="row">
+        <div class="properties-grid">
             {% for property in properties.items %}
-                <div class="col-lg-4 col-md-6 mb-4">
-                    {% include 'components/property_card.html' %}
+                <div class="property-card" onclick="window.location.href='{{ url_for('main.property_detail', id=property.id) }}'">
+                    <div class="property-image" style="background-image: url('{% if property.images %}{{ url_for('main.uploaded_file', filename=property.images[0].filename) }}{% else %}https://images.pexels.com/photos/1396122/pexels-photo-1396122.jpeg{% endif %}');">
+                        <span class="category-badge category-{{ property.category }}">
+                            {% if property.category == 'buy' %}For Sale
+                            {% elif property.category == 'rent' %}For Rent
+                            {% else %}PG/Hostel
+                            {% endif %}
+                        </span>
+                        <div class="property-price">
+                            {% if property.category == 'buy' %}
+                                ₹{{ "{:,.0f}".format(property.price / 100000) }}L
+                            {% else %}
+                                ₹{{ "{:,}".format(property.price) }}/mo
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="property-content">
+                        <h3 class="property-title">{{ property.title }}</h3>
+                        <div class="property-location">
+                            <i class="fas fa-map-marker-alt"></i>
+                            {{ property.location }}
+                        </div>
+                        <div class="property-details">
+                            {% if property.bedrooms > 0 %}
+                            <span class="property-detail">
+                                <i class="fas fa-bed"></i> {{ property.bedrooms }} Bed
+                            </span>
+                            {% endif %}
+                            {% if property.bathrooms > 0 %}
+                            <span class="property-detail">
+                                <i class="fas fa-bath"></i> {{ property.bathrooms }} Bath
+                            </span>
+                            {% endif %}
+                            <span class="property-detail">
+                                <i class="fas fa-ruler-combined"></i> {{ property.area }} sq ft
+                            </span>
+                        </div>
+                        {% if property.amenities %}
+                        <div class="property-amenities">
+                            {% set amenities_list = property.amenities.split(',') %}
+                            {% for amenity in amenities_list[:3] %}
+                                <span class="amenity-tag">{{ amenity.strip() }}</span>
+                            {% endfor %}
+                            {% if amenities_list|length > 3 %}
+                                <span class="amenity-tag">+{{ amenities_list|length - 3 }} more</span>
+                            {% endif %}
+                        </div>
+                        {% endif %}
+                    </div>
                 </div>
             {% endfor %}
         </div>
-        
+
         <!-- Pagination -->
         {% if properties.pages > 1 %}
             <nav aria-label="Properties pagination" class="mt-5">
-                <ul class="pagination justify-content-center">
+                <ul class="pagination">
                     {% if properties.has_prev %}
                         <li class="page-item">
                             <a class="page-link" href="{{ url_for('main.properties', page=properties.prev_num, **request.args) }}">
@@ -130,7 +155,7 @@
                             </a>
                         </li>
                     {% endif %}
-                    
+
                     {% for page_num in properties.iter_pages() %}
                         {% if page_num %}
                             {% if page_num != properties.page %}
@@ -150,7 +175,7 @@
                             </li>
                         {% endif %}
                     {% endfor %}
-                    
+
                     {% if properties.has_next %}
                         <li class="page-item">
                             <a class="page-link" href="{{ url_for('main.properties', page=properties.next_num, **request.args) }}">
@@ -166,12 +191,7 @@
         <div class="empty-state">
             <div class="empty-state-icon">🏠</div>
             <h3>No Properties Found</h3>
-            <p>We couldn't find any properties matching your criteria. This could be because:</p>
-            <ul class="list-unstyled text-muted">
-                <li>• No properties have been approved by admin yet</li>
-                <li>• Your search filters are too specific</li>
-                <li>• Properties in this category are not available</li>
-            </ul>
+            <p>We couldn't find any properties matching your criteria.</p>
             <div class="mt-4">
                 <a href="{{ url_for('main.properties') }}" class="btn btn-primary me-2">
                     <i class="fas fa-search me-1"></i> Browse All Properties
@@ -185,20 +205,4 @@
         </div>
     {% endif %}
 </div>
-
-<script>
-function updateSort(sortBy) {
-    const url = new URL(window.location);
-    url.searchParams.set('sort', sortBy);
-    window.location.href = url.toString();
-}
-
-// Set current sort value
-document.addEventListener('DOMContentLoaded', function() {
-    const sortSelect = document.querySelector('select[onchange*="updateSort"]');
-    const urlParams = new URLSearchParams(window.location.search);
-    const currentSort = urlParams.get('sort') || 'newest';
-    sortSelect.value = currentSort;
-});
-</script>
 {% endblock %}
